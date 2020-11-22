@@ -1,3 +1,4 @@
+#include"stdafx.h"
 #include "EditorState.h"
 
 
@@ -44,13 +45,14 @@ void EditorState::initVariables()
 
 
 
-EditorState::EditorState(RenderWindow* window, map <string, int>* supportedKeys, stack <State*>* states) :State(window, supportedKeys, states)
+EditorState::EditorState(RenderWindow* window,GraphicsSettings gfxSettings, map <string, int>* supportedKeys, stack <State*>* states) :State(window, gfxSettings,supportedKeys,states)
 {
 	this->initVariables();
 	this->initBackground();
 	this->InitFonts();
 	this->initKeybinds();
 	this->initButtom();
+	this->initPauseMenu();
 
 }
 
@@ -61,8 +63,13 @@ EditorState::~EditorState()
 	{
 		delete it->second;
 	}
+	delete this->pauseMenu;
 }
-
+void EditorState::initPauseMenu()
+{
+	this->pauseMenu = new PausedMenu(*this->window, this->font);
+	this->pauseMenu->addButtons("Quit", 100.f, 100.f, "Quit");
+}
 void EditorState::updateButton()
 {
 
@@ -73,6 +80,14 @@ void EditorState::updateButton()
 		it.second->update(mousePostView);
 	}
 	
+}
+
+void EditorState::updatePauseMenuButtons()
+{
+	if (this->pauseMenu->isButtonPressed("Quit"))
+	{
+		this->endState();
+	}
 }
 
 void EditorState::renderButtton(RenderTarget& target)
@@ -88,11 +103,26 @@ void EditorState::renderButtton(RenderTarget& target)
 void EditorState::update(const float& dt)
 {
 
-	this->updateInput(dt);
+	this->updatePlayerInput(dt);
 	this->updateMousePosition();
+	this->updateKeyTime(dt);
+	
+	this->updateMousePosition();
+	this->updateKeyTime(dt);
+	this->updatePlayerInput(dt);//to to samo co updateInput, jak masz czas to zmien
+
+	if (!paused)//jezeli nie ma pauzy to ciagle aktualizuj
+	{
+		this->updateButton();
+	}
+	else
+	{
+
+		this->pauseMenu->update(this->mousePostView);
+		this->updatePauseMenuButtons();
+
+	}
 	this->updateButton();
-
-
 
 }
 
@@ -107,13 +137,25 @@ void EditorState::render(RenderTarget* target)
 
 
 	this->renderButtton(*target);
+	this->maps.render(*target);
+	if (this->paused)
+	{
+		this->pauseMenu->render(*target);
+	}
 
 }
 
-void EditorState::updateInput(const float& dt)
+void EditorState::updatePlayerInput(const float& dt)
 {
-	if (Keyboard::isKeyPressed(Keyboard::Escape))
+	if (Keyboard::isKeyPressed(Keyboard::Escape) && this->getKeyTime())//jak bedziesz miala czas do zmien na keybinds itp.
 	{
-		this->endState();
+		if (!this->paused)
+		{
+			this->pauseState();
+		}
+		else
+		{
+			this->unpauseState();
+		}
 	}
 }
