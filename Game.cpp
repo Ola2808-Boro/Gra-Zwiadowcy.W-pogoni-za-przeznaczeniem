@@ -1,51 +1,30 @@
+#include"stdafx.h"
 #include "Game.h"
 
 
 void Game::initVariables()//nadaje zmiennym w private wartosci
 {
 	this->window = NULL;
-	this->fullscreen = false;
+	this->gridSize = 50.f;
 	this->dt = 0.f;
 }
 
 void Game::initWindow()//inicjuje okno, pobiera dane z pliku
 {
-	unsigned frame=120;
-	bool condition1 = false;
-	bool condition2 = true;
-	string title="Ola";
-	VideoMode window_1=VideoMode::getDesktopMode();
-	this->videomodes = VideoMode::getFullscreenModes();
-	unsigned antialiasing_level = 0;
-	ifstream ifs("Config/window.txt");
-	if (ifs.is_open())
+	
+	if (this->gfxSettings.fullscreen)
 	{
-		getline(ifs, title);
-		ifs >> window_1.width >> window_1.height;
-		ifs >> fullscreen;
-		ifs >> frame;
-		ifs >> condition1;
-		ifs >> condition2;
-		ifs >> antialiasing_level;
-
-	}
-	ifs.clear();
-	ifs.seekg(0);//beginning
-	ifs.close();
-	this->fullscreen = fullscreen;
-	this->windowSettings.antialiasingLevel = antialiasing_level;
-	if (this->fullscreen)
-	{
-		this->window = new RenderWindow(VideoMode(window_1.width, window_1.height), title, Style::Fullscreen, windowSettings);
+		//cout << "Fullscreen" << endl;
+		this->window = new RenderWindow(VideoMode(gfxSettings.resolutions.width, gfxSettings.resolutions.height), gfxSettings.title, Style::Fullscreen, gfxSettings.contextSettings);
 	}
 	else
 	{
-		this->window = new RenderWindow(VideoMode(window_1.width, window_1.height), title, Style::Titlebar|Style::Close, windowSettings);
+		this->window = new RenderWindow(VideoMode(gfxSettings.resolutions.width, gfxSettings.resolutions.height), gfxSettings.title, Style::Titlebar|Style::Close, gfxSettings.contextSettings);
 	}
-	///this->window->setFramerateLimit(frame);
-	//this->window->setVerticalSyncEnabled(condtion1);
-	this->window->setVerticalSyncEnabled(condition2);
-	//this->window = new RenderWindow(VideoMode(800, 600), "title");
+	///this->window->setFramerateLimit(gSettingsframeRateLimit);
+	//this->window->setVerticalSyncEnabled(gSettings.verticalSync);
+	this->window->setVerticalSyncEnabled(gfxSettings.verticalSync1);
+	//this->window = new RenderWindow(VideoMode(800, 600), "gSettings.title");
 }
 void Game::initKeys()
 {
@@ -72,19 +51,38 @@ void Game::initKeys()
 	}
 
 }
+void Game::initGraphicsSettings()
+{
+	gfxSettings.loadToFile("Config/graphics.ini");
+
+	
+}
 void Game::initStates()//doda ma poczatek
 {
-	this->states.push(new MainMenuState(this->window,&this->supportedKeys,&this->states));
+	this->states.push(new MainMenuState(this->window,this->gfxSettings,&this->supportedKeys,&this->states));
 	
+}
+
+void Game::initStateData()
+{
+//	this->/*stateData.*/window = window;
+//	this->/*stateData.*/supportedKeys = &this->supportedKeys;
+//	this->/*stateData.*/states = &this->states;
+//	this->/*stateData.*/gridSize = gridSize;
 }
 
 
 
 Game::Game()//od razu 
 {
+	this->initVariables();
+	this->initGraphicsSettings();
 	this->initWindow();
 	this->initKeys();
 	this->initStates();
+	this->initStateData();
+
+	
 	
 }
 
@@ -93,8 +91,8 @@ Game::~Game()
 	delete this->window;
 	while (!this->states.empty())
 	{
-		delete this->states.top();//zwraca wartoœæ szczytowego elementu na stosie.
-		 this->states.pop();//zdjêcie istniej¹cego elementu ze szczytu stosu;
+		delete this->states.top();//zwraca wartoÅ›Ä‡ szczytowego elementu na stosie.
+		 this->states.pop();//zdjÄ™cie istniejÄ…cego elementu ze szczytu stosu;
 
 	}
 }
@@ -103,10 +101,11 @@ void Game::updateSFMLEvent()
 {
 	while (this->window->pollEvent(sfEvent))
 	{
-		if ((sfEvent.type == Event::Closed)||(Keyboard::isKeyPressed(Keyboard::Escape)))
+		/*if ((sfEvent.type == Event::Closed)||(Keyboard::isKeyPressed(Keyboard::Escape)))
 		{
 			this->window->close();
-		}
+		}*/
+		//moj blad, przez to mi pauseMenu nie dzialalo
 		
 	}
 }
