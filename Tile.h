@@ -26,13 +26,14 @@ protected:
 
 public:
 	Tile();
-	Tile(float x, float y,float gridSizeF);
+	Tile(float x, float y,float gridSizeF,Texture& texture,const IntRect& textureRect);
 	virtual ~Tile();
 
 
 	//Funkcje
 	void update();
 	void render(RenderTarget& target);
+	
 
 };
 #endif // !TILE_H
