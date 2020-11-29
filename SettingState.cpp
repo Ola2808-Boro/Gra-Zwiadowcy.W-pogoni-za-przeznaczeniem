@@ -2,7 +2,7 @@
 #include "SettingState.h"
 
 //Konstruktor
-SettingState::SettingState(RenderWindow* window, GraphicsSettings gfxSettings, map <string, int>* supportedKeys, stack <State*>* states) :State(window,  gfxSettings,  supportedKeys,  states)
+SettingState::SettingState(StateData* stateData):State(stateData)
 {
 	this->initVariables();
 	this->initBackground();
@@ -113,8 +113,8 @@ void SettingState::updateGui(const float& dt)
 	}
 	if (this->buttons["Apply"]->isPressed())//wychodze 
 	{
-		gfxSettings.resolutions = this->modes[this->dropDownList["RESOLUTION"]->getActiveElementId()];
-		window->create(gfxSettings.resolutions, gfxSettings.title, Style::Default);
+		this->stateData->gfxSettings->resolutions = this->modes[this->dropDownList["RESOLUTION"]->getActiveElementId()];
+		window->create(this->stateData->gfxSettings->resolutions, this->stateData->gfxSettings->title, Style::Default);
 	}
 	//wszytsko do listy
 	for (auto& it : this->dropDownList)
@@ -168,3 +168,4 @@ void SettingState::updatePlayerInput(const float& dt)
 {
 
 }
+
