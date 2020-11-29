@@ -217,3 +217,87 @@ const bool gui::DropDownList::getKeyTime()
 
 	return false;
 }
+/////////////////////////////////////////////////////// TextureSelector///////////////////////////////////////
+
+gui::TextureSelector::TextureSelector(float x, float y, float width, float height,float gridSize,const Texture* textureSheet)
+{
+	this->gridSize = gridSize;
+	this->active = false;
+
+	this->bounds.setPosition(x, y);
+	this->bounds.setSize(Vector2f(width, height));
+	this->bounds.setFillColor(Color(200, 50, 50, 100));
+	this->bounds.setOutlineThickness(1.f);
+	this->bounds.setOutlineColor(Color(255, 255, 255, 200));
+
+	this->sheet.setTexture(*textureSheet);
+	this->sheet.setPosition(x, y);
+
+	if (this->sheet.getGlobalBounds().width>bounds.getGlobalBounds().width)
+	{
+		this->sheet.setTextureRect(IntRect(0, 0, bounds.getGlobalBounds().width, sheet.getGlobalBounds().height));
+	}
+	if (this->sheet.getGlobalBounds().height > bounds.getGlobalBounds().height)
+	{
+		this->sheet.setTextureRect(IntRect(0, 0, sheet.getGlobalBounds().width, bounds.getGlobalBounds().height));
+	}
+
+	this->selector.setPosition(x, y);
+	this->selector.setSize(Vector2f(gridSize, gridSize));
+	this->selector.setFillColor(Color::Transparent);
+	this->selector.setOutlineColor(Color::Red);
+
+	this->texuretRect.width = static_cast<int>(gridSize);
+	this->texuretRect.height = static_cast<int>(gridSize);
+
+	
+}
+
+gui::TextureSelector::~TextureSelector()
+{
+	
+}
+
+
+void gui::TextureSelector::update(Vector2i& mousePosWindow)
+{
+
+	if (this->bounds.getGlobalBounds().contains(static_cast<Vector2f>(mousePosWindow)))
+	{
+		this->active=true;
+	}
+	else
+	{
+		this->active = false;
+	}
+
+	if (this->active)
+	{
+		this->mousePosGrid.x = ((mousePosWindow.x - static_cast<int>(this->bounds.getPosition().x))/static_cast<unsigned>(gridSize));
+		this->mousePosGrid.x = ((mousePosWindow.y - static_cast<int>(this->bounds.getPosition().y))/static_cast<unsigned>(gridSize));
+		this->selector.setPosition(this->bounds.getPosition().x + mousePosGrid.x * this->gridSize, this->bounds.getPosition().y + mousePosGrid.y * this->gridSize);
+	}
+	this->texuretRect.left = static_cast<int>(this->selector.getPosition().x-this->bounds.getPosition().x);
+	this->texuretRect.top = static_cast<int>(this->selector.getPosition().y - this->bounds.getPosition().y);
+}
+
+void gui::TextureSelector::render(RenderTarget& target)
+{
+	target.draw(bounds);
+	target.draw(sheet);
+	if (this->active)
+	{
+		target.draw(selector);
+	}
+}
+const bool& gui::TextureSelector::getActive() const
+{
+	return this->active;
+}
+
+const IntRect& gui::TextureSelector::getTextureRect() const
+{
+	return this->texuretRect;
+}
+
+
