@@ -5,16 +5,17 @@ void State::initKeybinds()
 {
 }
 
-State::State(RenderWindow* window, GraphicsSettings  gfxSettings, map <string, int>* supportedKeys, stack <State*>* states)//konstruktor, nadaje sobie wartosci
+State::State(StateData* stateData)//konstruktor, nadaje sobie wartosci
 {
-	this->window = /*stateData.*/window;
-	this->supportedKeys =/*stateData.*/supportedKeys;
-	this->states = /*stateData.*/states;
+	this->stateData = stateData;
+	this->window = stateData->window;
+	this->supportedKeys =stateData->supportedKeys;
+	this->states = stateData->states;
 	this->quit = false;
 	this->paused = false;
 	this->keyTime = 0.f;
 	this->keyTimeMax = 10.f;
-	this->gridSize = /*stateData.*/gridSize;
+	this->gridSize = stateData->gridSize;
 }
 
 State::~State()
@@ -58,7 +59,8 @@ void State::updateMousePosition()
 	this->mousePostScreen = Mouse::getPosition();
 	this->mousePostWindow = Mouse::getPosition(*this->window);
 	this->mousePostView=this->window->mapPixelToCoords(Mouse::getPosition(*this->window));
-
+	this->mousePosGrid = Vector2u(static_cast<unsigned>(mousePostView.x)/static_cast<unsigned>(this->gridSize), static_cast<unsigned>(mousePostView.y) / static_cast<unsigned>(this->gridSize));
+	
 
 }
 
