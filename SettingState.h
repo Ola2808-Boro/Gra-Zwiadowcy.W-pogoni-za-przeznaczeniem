@@ -8,7 +8,7 @@ class SettingState:public State//klasa bazowa
 private:
 	RectangleShape background;//tlo
 	Font font;
-	GraphicsSettings gfxSettings;
+	//GraphicsSettings gfxSettings;
 	Texture backgroundtexture;//zeby miec funkcje z tej klasy
 	//Button* gamestate_button;//obiekt klasy zajmujacej sie prostokatem
 	Text optionsText;
@@ -26,7 +26,7 @@ private:
 	
 
 public:
-	SettingState(RenderWindow* window, GraphicsSettings gfxSettings, map <string, int>* supportedKeys, stack <State*>* states);
+	SettingState(StateData* stateData);
 	virtual~SettingState();
 
 	void update(const float& dt);
