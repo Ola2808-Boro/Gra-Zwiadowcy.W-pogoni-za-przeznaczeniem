@@ -101,7 +101,33 @@ using namespace sf;
 			const short unsigned& getActiveElementId() const;
 			
 		};
+		class TextureSelector
+		{
+		private:
+			RectangleShape bounds;
+			Sprite sheet;
+			RectangleShape selector;
+			IntRect texuretRect;
+			Vector2u mousePosGrid;
+			float gridSize;
+			bool active;
+
+		public:
+			//Konstruktor
+			TextureSelector(float x, float  y,float width,float height, float gridSize, const Texture* textureSheet);
+			//Destruktor
+			~TextureSelector();
+			//Potrzebne do dostepu
+			const bool& getActive() const;
+			const IntRect& getTextureRect() const;
+
+
+			//Funkcje
+			void update(Vector2i& mousePosWindow);
+			void render(RenderTarget& target);
+		};
 	}
 #endif // !BUTTON_H
+
 
 
