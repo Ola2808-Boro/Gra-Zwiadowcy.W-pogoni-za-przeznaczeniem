@@ -14,7 +14,7 @@ public:
 	StateData()
 	{
 
-	}
+	};
 	virtual~StateData()
 	{
 
@@ -23,7 +23,7 @@ public:
 	RenderWindow* window;
 	map <string, int>* supportedKeys;
 	stack <State*>* states;
-	GraphicsSettings* graphicsSettings;
+	GraphicsSettings* gfxSettings;
 };
 
 
@@ -48,11 +48,12 @@ protected:
 							  a w drugim typu int.*/
 	Vector2i mousePostWindow;
 	Vector2f mousePostView;
+	Vector2u mousePosGrid;
 
 	virtual void initKeybinds() = 0;
 
 public:
-	State(RenderWindow* window, GraphicsSettings  gfxSettings, map <string, int>* supportedKeys, stack <State*>* states);//creat window 
+	State(StateData* stateData);//creat window 
 	virtual ~State();
 
 	const bool& getQuit() const;
