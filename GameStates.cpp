@@ -42,6 +42,11 @@ void GameStates::initPauseMenu()
 	this->pauseMenu->addButtons("Quit", 100.f, 100.f, "Quit");
 }
 
+void GameStates::initTileMap()
+{
+	this->tileMap = new TileMap(this->stateData->gridSize, 10, 10 );
+}
+
 void GameStates::initPlayers()
 {
 	//this->player = new Player(0, 0, this->textures["Player_1"]);
@@ -50,19 +55,21 @@ void GameStates::initPlayers()
 
 
 
-GameStates::GameStates(RenderWindow* window,GraphicsSettings gfxSettings, map <string, int>* supportedKeys, stack <State*>* states) :State(window, gfxSettings, supportedKeys, states)
+GameStates::GameStates(StateData* stateData):State(stateData)
 {
 	this->initKeybinds();
 	this->initTextures();
-	this->initPlayers();
 	this->InitFonts();
 	this->initPauseMenu();
+	this->initPlayers();
+	this->initTileMap();
 }
 
 GameStates::~GameStates()
 {
 	delete this->player;
 	delete this->pauseMenu;
+	delete this->tileMap;
 }
 
 void GameStates::update(const float& dt)
@@ -95,7 +102,7 @@ void GameStates::render(RenderTarget* target)
 		target = this->window;
 	}
 	cout << "Render map w GS" << endl;
-	this->tilemap.render(*target);
+	this->tileMap->render(*target);
 	this->player->render(*target);
 	if (this->paused)
 	{
@@ -153,5 +160,6 @@ void GameStates::updatePauseMenuButtons()
 		this->endState();
 	}
 }
+
 
 
