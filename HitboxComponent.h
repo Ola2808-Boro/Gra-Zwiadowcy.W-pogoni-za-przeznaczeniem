@@ -17,15 +17,21 @@ class HitboxComponent
 private:
 	Sprite& sprite;
 	RectangleShape hitbox;
+	FloatRect nextPosition;
 	float offset_x; 
 	float offset_y;
 	
 public:
 	HitboxComponent(Sprite& sprite, float offset_x, float offset_y,float width,float height);
 	virtual ~HitboxComponent();
+	const Vector2f& getPosition() const;
 	void update();
 	void render(RenderTarget &target);
-	bool checkIntersect(const FloatRect frect);
+	void setPosition(const Vector2f position);
+	void setPosition(const float x, const float y);
+	bool intersect(const FloatRect frect);
+	const FloatRect getGlobalBounds() const;
+	const FloatRect& getNextPosition(const Vector2f& velocity);
 
 };
 
