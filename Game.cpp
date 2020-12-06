@@ -5,7 +5,7 @@
 void Game::initVariables()//nadaje zmiennym w private wartosci
 {
 	this->window = NULL;
-	this->gridSize = 50.f;
+	this->gridSize = 100.f;
 	this->dt = 0.f;
 }
 
@@ -21,7 +21,7 @@ void Game::initWindow()//inicjuje okno, pobiera dane z pliku
 	{
 		this->window = new RenderWindow(VideoMode(gfxSettings.resolutions.width, gfxSettings.resolutions.height), gfxSettings.title, Style::Titlebar|Style::Close, gfxSettings.contextSettings);
 	}
-	///this->window->setFramerateLimit(gSettingsframeRateLimit);
+	//this->window->setFramerateLimit(gSettingsframeRateLimit);
 	//this->window->setVerticalSyncEnabled(gSettings.verticalSync);
 	this->window->setVerticalSyncEnabled(gfxSettings.verticalSync1);
 	//this->window = new RenderWindow(VideoMode(800, 600), "gSettings.title");
@@ -59,16 +59,17 @@ void Game::initGraphicsSettings()
 }
 void Game::initStates()//doda ma poczatek
 {
-	this->states.push(new MainMenuState(this->window,this->gfxSettings,&this->supportedKeys,&this->states));
+	this->states.push(new MainMenuState(&this->stateData));
 	
 }
 
 void Game::initStateData()
 {
-//	this->/*stateData.*/window = window;
-//	this->/*stateData.*/supportedKeys = &this->supportedKeys;
-//	this->/*stateData.*/states = &this->states;
-//	this->/*stateData.*/gridSize = gridSize;
+	this->stateData.window = this->window;
+	this->stateData.gfxSettings = &this->gfxSettings;
+	this->stateData.supportedKeys = &this->supportedKeys;
+	this->stateData.states = &this->states;
+	this->stateData.gridSize = this->gridSize;
 }
 
 
@@ -79,11 +80,8 @@ Game::Game()//od razu
 	this->initGraphicsSettings();
 	this->initWindow();
 	this->initKeys();
-	this->initStates();
 	this->initStateData();
-
-	
-	
+	this->initStates();
 }
 
 Game::~Game()
@@ -116,8 +114,8 @@ void Game::update()
 
 	if (!this->states.empty())
 	{
-	
-		
+		if (window->hasFocus())
+		{
 			this->states.top()->update(this->dt);
 
 			if (this->states.top()->getQuit())
@@ -127,7 +125,7 @@ void Game::update()
 				delete this->states.top();
 				this->states.pop();
 			}
-		
+		}
 	}
 	//Application end
 	else
@@ -144,7 +142,9 @@ void Game::run()
 	while (this->window->isOpen())
 	{
 		this->updateDT();
+		
 		this->update();
+		
 		this->render();
 	}
 }
@@ -171,4 +171,5 @@ void Game::updateDT()
 	this->dt = this->dtClock.restart().asSeconds();
 	//system("cls");
 	//cout << this->dt << "\n";
+}
 }
