@@ -77,7 +77,7 @@ using namespace sf;
 			void setId(const short unsigned id);
 			void setText(string text);
 			void render(RenderTarget& target);
-			void update(Vector2f mousePos);
+			void update(Vector2i& mousePostWindow);
 
 		};
 
@@ -94,7 +94,7 @@ using namespace sf;
 			DropDownList(float x, float y, float width, float height, string list[],Font& font, unsigned nrOfElements, unsigned default_index = 0);
 			~DropDownList();
 			void render(RenderTarget& target);
-			void update(Vector2f& mousePos, const float& dt);
+			void update(Vector2i& mousePostWindow, const float& dt);
 			const bool getKeyTime();
 			void updateKeyTime(const float& dt);
 			
@@ -111,23 +111,25 @@ using namespace sf;
 			Vector2u mousePosGrid;
 			float gridSize;
 			bool active;
+			bool hidden;
+			gui::Button* hiddenButton;
+			float keyTime;
+			float keyTimeMax;
 
 		public:
 			//Konstruktor
-			TextureSelector(float x, float  y,float width,float height, float gridSize, const Texture* textureSheet);
+			TextureSelector(float x, float  y,float width,float height, float gridSize, const Texture* textureSheet,Font& font,string text);
 			//Destruktor
 			~TextureSelector();
 			//Potrzebne do dostepu
 			const bool& getActive() const;
 			const IntRect& getTextureRect() const;
-
-
+			const bool getKeyTime();
+			
 			//Funkcje
-			void update(Vector2i& mousePosWindow);
+			void update(Vector2i& mousePosWindow, const float& dt);
 			void render(RenderTarget& target);
+			void updateKeyTime(const float& dt);
 		};
 	}
 #endif // !BUTTON_H
-
-
-
