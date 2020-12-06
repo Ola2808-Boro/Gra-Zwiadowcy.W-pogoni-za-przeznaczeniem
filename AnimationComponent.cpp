@@ -1,3 +1,4 @@
+#include"stdafx.h"
 #include "AnimationComponent.h"
 
 AnimationComponent::AnimationComponent(Sprite &sprite,Texture& texture_sheet):sprite(sprite), textureSheet(texture_sheet),lastAnimation(NULL), priorityanimation(NULL)
@@ -13,7 +14,13 @@ AnimationComponent::~AnimationComponent()
 	}
 }
 
-void AnimationComponent::play(const string key,const float& dt,const bool priority)
+const bool& AnimationComponent::isDone(const string key) 
+{
+	return this->animation[key]->isDone();
+
+}
+
+const bool& AnimationComponent::play(const string key,const float& dt,const bool priority)
 {
 	if (this->priorityanimation) //jezeli istnieje to
 	{
@@ -58,9 +65,10 @@ void AnimationComponent::play(const string key,const float& dt,const bool priori
 
 		this->animation[key]->play(dt);
 	}
+	return this->animation[key]->isDone();
 	
 }
-void AnimationComponent::play(const string key, const float& dt,const float& modifier, const float& modifier_max, const bool priority )
+const bool& AnimationComponent::play(const string key, const float& dt,const float& modifier, const float& modifier_max, const bool priority )
 {
 	if (this->priorityanimation) //If there is a priority animation
 	{
@@ -105,6 +113,7 @@ void AnimationComponent::play(const string key, const float& dt,const float& mod
 
 		this->animation[key]->play(dt, abs(modifier / modifier_max));
 	}
+	return this->animation[key]->isDone();
 }
 
 void AnimationComponent::addAnimation(const string key,float animation_timer, int start_frame_x, int start_frame_y, int end_frame_x, int end_frame_y, int width, int height)
