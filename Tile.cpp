@@ -3,25 +3,56 @@
 
 Tile::Tile()
 {
+	this->collision = false;
+	this->type = 0;
 }
 
-Tile::Tile(float x, float y, float gridSizeF,Texture& texture, const IntRect& textureRect)
+Tile::Tile(int grid_x, int grid_y, float gridSizeF, Texture& texture, const IntRect& texture_rect,bool collision,short type)
 {
-	x = 10;
-	y = 10;
+
 	gridSizeF = gridSizeF;
 	this->shape.setSize(Vector2f(gridSizeF, gridSizeF));
 	//this->shape.setFillColor(Color::Green);
 	//->shape.setOutlineThickness(1.f);
 	//this->shape.setOutlineColor(Color::Black);
-	this->shape.setPosition(x, y);
-	this->shape.setTexture(&texture);
-	this->shape.setTextureRect(textureRect);
+	this->shape.setPosition(static_cast<float>(grid_x)*gridSizeF, (static_cast<float>(grid_y)* gridSizeF));
+	this->shape.setTexture(&texture);//sprawdzic
+	this->shape.setTextureRect(texture_rect);
+
+
+	this->collision = collision;
+	this->type = type;
 	
 }
 
 Tile::~Tile()
 {
+}
+
+const string Tile::getAsString() const
+{
+	std::stringstream ss;
+	ss << this->shape.getTextureRect().left << " " << this->shape.getTextureRect().top << this->collision << " " << this->type << " " << endl;
+	return ss.str();
+}
+const FloatRect Tile::getGlobalBounds() const
+{
+	return this->shape.getGlobalBounds();
+}
+const bool& Tile::getCollision() const
+{
+	return this->collision;
+}
+
+
+const Vector2f& Tile::getPosition() const
+{
+	return this->shape.getPosition();
+}
+
+const bool Tile::intersects(const FloatRect bounds) const
+{
+	return this->shape.getGlobalBounds().intersects(bounds);
 }
 
 void Tile::update()
