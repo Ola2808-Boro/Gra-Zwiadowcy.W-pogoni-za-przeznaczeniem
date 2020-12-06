@@ -17,7 +17,9 @@ class EditorState :
 {
 private:	
 
+
 	   Font font;
+	   View view;
 	   Text cursorText;
 	   //Button *gamestate_button;//obiekt klasy zajmujacej sie prostokatem
 	   map <string, gui::Button*> buttons;
@@ -27,6 +29,14 @@ private:
 	   RectangleShape selectorRect;
 	   gui::TextureSelector *textureSeletor;
 
+	   RectangleShape sidebar;
+	
+
+	   short type;
+	   bool collision;
+	   float cameraSpeed;
+	   //10
+	   void initView();
 	   void initKeybinds();
 	   void InitFonts();
 	   void initButtom();
@@ -44,7 +54,7 @@ public:
 	void updateEditorInput(const float& dt);
 	virtual ~EditorState();
 	void updateButton();
-	void updateGui();
+	void updateGui(const float& dt);
 	void updatePauseMenuButtons();
 	void renderButtton(RenderTarget& target);
 	void renderGui(RenderTarget& target);
