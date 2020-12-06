@@ -38,7 +38,7 @@ gui::Button::Button(float x, float y, float width, float height, string text_but
 	//Polozenie tekstu w przycisku
 	this->text_button.setPosition(
 		(button.getPosition().x + (this->button.getGlobalBounds().width / 2.f))-this->text_button.getGlobalBounds().width/2.f,
-		(button.getPosition().y + (this->button.getGlobalBounds().height / 2.f))- this->text_button.getGlobalBounds().height/ 2.f);//da nam napis na samym srodku
+		button.getPosition().y);//da nam napis na samym srodku
 	
 	
 }
@@ -88,12 +88,12 @@ void gui::Button::render(RenderTarget &target)
 	target.draw(text_button);
 }
 
-void gui::Button::update(Vector2f mousePos)
+void gui::Button::update(Vector2i& mousePostWindow)
 {
 	this->buttonState = button_idle;
 
 	//sprawdzic czy bedzie wcisniety
-	if (this->button.getGlobalBounds().contains(mousePos))//metoda z prostokatem
+	if (this->button.getGlobalBounds().contains(static_cast<Vector2f>(mousePostWindow)))//metoda z prostokatem
 	{
 		this->buttonState = button_hover;//prawdzam czy zostalo najehane myszka na przycisk
 		if (Mouse::isButtonPressed(Mouse::Left))
@@ -137,7 +137,7 @@ gui::DropDownList::DropDownList(float x, float y, float width, float height, str
 	this->showList = showList;
 	this->activeElement = new gui::Button(x, y, width, height, list[default_index], this->font, Color::Blue, Color::Cyan, Color::Yellow, Color::Red, Color::Black, Color::Blue, 12, Color::Red, Color::Yellow, Color::White,0);
 	//unsigned nrOfElement = sizeof(list) / sizeof(string);//ile lementow jest w liscie
-	for (size_t i = 0; i < nrOfElements; i++)
+	for (unsigned i = 0; i < nrOfElements; i++)
 	{
 		this->list.push_back(new gui::Button(x, y+(/*spojrz na gorsze, czemu plus jeden*/(i+1)*height), width, height, list[i], this->font, Color::Blue, Color::Cyan, Color::Yellow, Color::Red, Color::Black, Color::Blue, 12, Color::Red, Color::Yellow, Color::White,i));
 	}
@@ -167,10 +167,10 @@ void gui::DropDownList::render(RenderTarget& target)
 	}
 }
 
-void gui::DropDownList::update(Vector2f& mousePos, const float& dt)
+void gui::DropDownList::update(Vector2i& mousePostWindow, const float& dt)
 {
 	this->updateKeyTime(dt);
-	activeElement->update(mousePos);
+	activeElement->update(mousePostWindow);
 	if (this->activeElement->isPressed()&& this->getKeyTime())
 	{
 		if (showList)
@@ -187,7 +187,7 @@ void gui::DropDownList::update(Vector2f& mousePos, const float& dt)
 	{
 		for (auto& i : this->list)
 		{
-			i->update(mousePos);
+			i->update(mousePostWindow);
 
 			if (i->isPressed()&& getKeyTime())
 			{
@@ -219,27 +219,30 @@ const bool gui::DropDownList::getKeyTime()
 }
 /////////////////////////////////////////////////////// TextureSelector///////////////////////////////////////
 
-gui::TextureSelector::TextureSelector(float x, float y, float width, float height,float gridSize,const Texture* textureSheet)
+gui::TextureSelector::TextureSelector(float x, float y, float width, float height,float gridSize,const Texture* textureSheet, Font& font, string text)
 {
+	keyTimeMax = 1.f;
+	keyTime = 0.f;
 	this->gridSize = gridSize;
 	this->active = false;
-
-	this->bounds.setPosition(x, y);
+	this->hidden = false;
+	float offest = 100.f;
+	this->bounds.setPosition(x+offest, y);
 	this->bounds.setSize(Vector2f(width, height));
-	this->bounds.setFillColor(Color(200, 50, 50, 100));
+	this->bounds.setFillColor(Color(50, 50, 50, 100));
 	this->bounds.setOutlineThickness(1.f);
 	this->bounds.setOutlineColor(Color(255, 255, 255, 200));
 
 	this->sheet.setTexture(*textureSheet);
-	this->sheet.setPosition(x, y);
+	this->sheet.setPosition(x+offest, y);
 
 	if (this->sheet.getGlobalBounds().width>bounds.getGlobalBounds().width)
 	{
-		this->sheet.setTextureRect(IntRect(0, 0, bounds.getGlobalBounds().width, sheet.getGlobalBounds().height));
+		this->sheet.setTextureRect(IntRect(0, 0, static_cast<int>(bounds.getGlobalBounds().width),static_cast<int>( sheet.getGlobalBounds().height)));
 	}
 	if (this->sheet.getGlobalBounds().height > bounds.getGlobalBounds().height)
 	{
-		this->sheet.setTextureRect(IntRect(0, 0, sheet.getGlobalBounds().width, bounds.getGlobalBounds().height));
+		this->sheet.setTextureRect(IntRect(0, 0, static_cast<int>(sheet.getGlobalBounds().width), static_cast<int>(this->bounds.getGlobalBounds().height)));
 	}
 
 	this->selector.setPosition(x, y);
@@ -250,45 +253,70 @@ gui::TextureSelector::TextureSelector(float x, float y, float width, float heigh
 	this->texuretRect.width = static_cast<int>(gridSize);
 	this->texuretRect.height = static_cast<int>(gridSize);
 
-	
+	this->hiddenButton =  new gui::Button(x,y, 50, 50, text, font, Color::Blue, Color::Cyan, Color::Yellow, Color::Yellow, Color::Red, Color::Black, 30, Color::Red, Color::Yellow, Color::White,0);
 }
 
 gui::TextureSelector::~TextureSelector()
 {
-	
+	delete this->hiddenButton;
 }
 
 
-void gui::TextureSelector::update(Vector2i& mousePosWindow)
+void gui::TextureSelector::update(Vector2i& mousePosWindow,const float &dt)
 {
 
-	if (this->bounds.getGlobalBounds().contains(static_cast<Vector2f>(mousePosWindow)))
+	this->hiddenButton->update(mousePosWindow);
+	if (this->hiddenButton->isPressed()&& getKeyTime())
 	{
-		this->active=true;
+		if (hidden)
+		{
+			hidden = false;
+		}
+		else
+		{
+			hidden = true;
+		}
+	}
+	if (!this->hidden)
+	{
+		if (this->bounds.getGlobalBounds().contains(static_cast<Vector2f>(mousePosWindow)))
+		{
+			this->active = true;
+		}
+		else
+		{
+			this->active = false;
+		}
+
+		if (this->active)
+		{
+			this->mousePosGrid.x = ((mousePosWindow.x - static_cast<int>(this->bounds.getPosition().x)) / static_cast<unsigned>(gridSize));
+			this->mousePosGrid.x = ((mousePosWindow.y - static_cast<int>(this->bounds.getPosition().y)) / static_cast<unsigned>(gridSize));
+			this->selector.setPosition(this->bounds.getPosition().x + mousePosGrid.x * this->gridSize, this->bounds.getPosition().y + mousePosGrid.y * this->gridSize);
+		}
+		this->texuretRect.left = static_cast<int>(this->selector.getPosition().x - this->bounds.getPosition().x);
+		this->texuretRect.top = static_cast<int>(this->selector.getPosition().y - this->bounds.getPosition().y);
 	}
 	else
 	{
-		this->active = false;
+
 	}
 
-	if (this->active)
-	{
-		this->mousePosGrid.x = ((mousePosWindow.x - static_cast<int>(this->bounds.getPosition().x))/static_cast<unsigned>(gridSize));
-		this->mousePosGrid.x = ((mousePosWindow.y - static_cast<int>(this->bounds.getPosition().y))/static_cast<unsigned>(gridSize));
-		this->selector.setPosition(this->bounds.getPosition().x + mousePosGrid.x * this->gridSize, this->bounds.getPosition().y + mousePosGrid.y * this->gridSize);
-	}
-	this->texuretRect.left = static_cast<int>(this->selector.getPosition().x-this->bounds.getPosition().x);
-	this->texuretRect.top = static_cast<int>(this->selector.getPosition().y - this->bounds.getPosition().y);
 }
+
 
 void gui::TextureSelector::render(RenderTarget& target)
 {
-	target.draw(bounds);
-	target.draw(sheet);
-	if (this->active)
+	if (!this->hidden)
 	{
-		target.draw(selector);
+		target.draw(bounds);
+		target.draw(sheet);
+		if (this->active)
+		{
+			target.draw(selector);
+		}
 	}
+	this->hiddenButton->render(target);
 }
 const bool& gui::TextureSelector::getActive() const
 {
@@ -299,5 +327,24 @@ const IntRect& gui::TextureSelector::getTextureRect() const
 {
 	return this->texuretRect;
 }
+const bool gui::TextureSelector::getKeyTime()
+{
+	if (this->keyTime >= this->keyTimeMax)
+	{
+		this->keyTime = 0.f;
+		return true;
+	}
+
+	return false;
+}
+
+void gui::TextureSelector::updateKeyTime(const float& dt)
+{
+	if (keyTime < keyTimeMax)
+	{
+		keyTime += dt * 10;
+	}
+}
+
 
 
