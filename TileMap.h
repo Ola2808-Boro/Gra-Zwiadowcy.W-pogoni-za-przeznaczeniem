@@ -2,22 +2,34 @@
 #define TILEMAP_H
 
 #include "Tile.h"
+#include "Entity.h"
+
+class Tile;
+class Entity;
 
 class TileMap
 {
 private:
 	float gridSizeF;
-	unsigned gridSizeU;
-	unsigned layers;
-	Vector2u maxSize;//unsigned int
-	vector< vector<vector<Tile*> > >  map;
+	int gridSizeI;
+	int layers;
+	Vector2f maxSizeWorldF;//f
+	Vector2i maxSizeWorldGrid;// int
+	vector< vector<vector <vector<Tile*>> > >  map;
 	Texture tileTextureSheet;
+	string textureFile;
+	RectangleShape collisonBox;
+	void clear();
 
-
+	int fromX;
+	int fromY;
+	int toY;
+	int toX;
+	int layer;
 public:
 
 	//Konstruktor
-	TileMap(float gridSize,unsigned width,unsigned height);
+	TileMap(float gridSize, int width,int height, string texture_file);
 	//Destruktor
 	virtual~TileMap();
 
@@ -25,8 +37,12 @@ public:
 
 	//Funkcje
 	void update();
-	void render(RenderTarget& target);
-	void addTile(const unsigned x, const unsigned y, const unsigned z, const IntRect& textureRect);
-	void removeTile(const unsigned x, const unsigned y, const unsigned z);
+	void render(RenderTarget& target, Entity* entity=NULL);
+	void addTile(const int x, const int y, const int z, const IntRect& texture_rect,const bool& collision,const short& type);
+	void removeTile(const int x, const int y, const int z);
+	void saveToFile(const string file_name);
+	void loadFromFile(const string file_name);
+	void updateCollision(Entity * entity, const float& dt);
+
 };
 #endif // !TILEMAP_H
