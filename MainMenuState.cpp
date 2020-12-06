@@ -31,10 +31,10 @@ void MainMenuState::InitFonts()
 void MainMenuState::initButtom()
 {
 	//(float x, float y, float width, float height, string text_button, Font font_button, Color hoverColor, Color activeColor, Color idleColor);
-	this->buttons["Game_State"] = new gui::Button(350, 100, 150, 50, "New Game", this->font, Color::Blue, Color::Cyan, Color::Yellow, Color::Yellow, Color::Red, Color::Black, 20, Color::Red, Color::Yellow, Color::White,0);
-	this->buttons["Exit_State"] = new gui::Button(350, 400, 150, 50, "Quit", this->font, Color::Blue, Color::Cyan, Color::Yellow, Color::Yellow, Color::Red, Color::Black, 20, Color::Red, Color::Yellow, Color::White,0);
-	this->buttons["Editor_State"] = new gui::Button(350, 300, 150, 50, "Editor", this->font, Color::Blue, Color::Cyan, Color::Yellow, Color::Yellow, Color::Red, Color::Black, 20, Color::Red, Color::Yellow, Color::White,0);
-	this->buttons["Settings_State"] = new gui::Button(350, 200, 150, 50, "Settings", this->font, Color::Blue, Color::Cyan, Color::Yellow, Color::Yellow, Color::Red, Color::Black, 20, Color::Red, Color::Yellow, Color::White,0);//sprobowac migania z 0
+	this->buttons["Game_State"] = new gui::Button(350, 100, 150, 50, "New Game", this->font, Color::Blue, Color::Cyan, Color::Yellow, Color::Yellow, Color::Red, Color::Black, 35, Color::Red, Color::Yellow, Color::White,0);
+	this->buttons["Exit_State"] = new gui::Button(350, 400, 150, 50, "Quit", this->font, Color::Blue, Color::Cyan, Color::Yellow, Color::Yellow, Color::Red, Color::Black, 35, Color::Red, Color::Yellow, Color::White,0);
+	this->buttons["Editor_State"] = new gui::Button(350, 300, 150, 50, "Editor", this->font, Color::Blue, Color::Cyan, Color::Yellow, Color::Yellow, Color::Red, Color::Black, 35, Color::Red, Color::Yellow, Color::White,0);
+	this->buttons["Settings_State"] = new gui::Button(350, 200, 150, 50, "Settings", this->font, Color::Blue, Color::Cyan, Color::Yellow, Color::Yellow, Color::Red, Color::Black, 35, Color::Red, Color::Yellow, Color::White,0);//sprobowac migania z 0
 }
 
 void MainMenuState::initBackground()
@@ -54,9 +54,9 @@ void MainMenuState::initVariables()
 
 
 
-MainMenuState::MainMenuState(RenderWindow* window, GraphicsSettings& gfxSettings, map <string, int>* supportedKeys, stack <State*>* states) :State(window,gfxSettings,supportedKeys,states)
+MainMenuState::MainMenuState(StateData* stateData):State(stateData)
 {
-	gfxSettings = gfxSettings;
+	
 	this->initVariables();
 	this->initBackground();
 	this->InitFonts();
@@ -81,22 +81,22 @@ void MainMenuState::updateButton()
 	cout << this->mousePostView.x << " " << this->mousePostView.y << endl;
 	for (auto &it:this->buttons )
 	{
-		it.second->update(mousePostView);
+		it.second->update(mousePostWindow);
 	}
 	if (this->buttons["Game_State"]->isPressed())
 	{
 		
-		this->states->push(new GameStates(this->window, this->gfxSettings, this->supportedKeys, this->states));
+		this->states->push(new GameStates(this->stateData));
 	}
 	if (this->buttons["Settings_State"]->isPressed())
 	{
 
-		this->states->push(new SettingState(this->window,this->gfxSettings, this->supportedKeys, this->states));
+		this->states->push(new SettingState(this->stateData));
 	}
 	if (this->buttons["Editor_State"]->isPressed())
 	{
 
-		this->states->push(new EditorState(this->window, this->gfxSettings, this->supportedKeys, this->states));
+		this->states->push(new EditorState(this->stateData));
 	}
 	if (this->buttons["Exit_State"]->isPressed())
 	{
