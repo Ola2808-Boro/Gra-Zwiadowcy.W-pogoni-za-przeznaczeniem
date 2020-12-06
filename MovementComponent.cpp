@@ -1,3 +1,4 @@
+#include"stdafx.h"
 #include "MovementComponent.h"
 
 MovementComponent::MovementComponent(Sprite& sprite,float maxVelocity, float acceleration, float deceleration): sprite(sprite),maxVelocity(maxVelocity), acceleration(acceleration), deceleration(deceleration)
@@ -22,6 +23,23 @@ void MovementComponent::move(const float direction_x, const float direction_y, c
 	this->velocity.y += this->acceleration * direction_y * dt;
 	cout << velocity.x << " " << velocity.y << endl;
 	
+}
+
+void MovementComponent::stopVelocity()
+{
+	this->velocity.x = 0.f;
+	this->velocity.y = 0.f;
+}
+
+void MovementComponent::stopVelocityX()//ma ustawic velocity na 0
+{
+	this->velocity.x = 0.f;
+	
+}
+void MovementComponent::stopVelocityY()//ma ustawic velocity na 0
+{
+
+	this->velocity.y = 0.f;
 }
 
 const bool MovementComponent::getStates(unsigned state) const
