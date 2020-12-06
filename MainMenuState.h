@@ -10,7 +10,6 @@ class MainMenuState:public State //dziedzicze po State ma f wirtualne
 {
 private:
 	RectangleShape background;//tlo
-	GraphicsSettings gfxSettings;
 	Font font;
 	Texture backgroundtexture;//zeby miec funkcje z tej klasy
 	//gui::Button *gamestate_button;//obiekt klasy zajmujacej sie prostokatem
@@ -22,7 +21,7 @@ private:
 	void initVariables();
 
 public:
-	MainMenuState(RenderWindow* window,GraphicsSettings& gfxSettings, map <string, int>* supportedKeys, stack <State*>* states);
+	MainMenuState(StateData* stateData);
 	void update(const float& dt);
 	void render(RenderTarget* target = nullptr);
 	void updatePlayerInput(const float& dt);
