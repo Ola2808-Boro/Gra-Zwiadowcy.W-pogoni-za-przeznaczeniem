@@ -1,6 +1,31 @@
 #include"stdafx.h"
 #include "GameStates.h"
 
+void GameStates::iniDefferedRender()
+{
+	this->renderTexture.create(this->stateData->gfxSettings->resolutions.width, this->stateData->gfxSettings->resolutions.height);
+
+	this->renderSprite.setTexture(this->renderTexture.getTexture());
+	this->renderSprite.setTextureRect(IntRect(0, 0, this->stateData->gfxSettings->resolutions.width, this->stateData->gfxSettings->resolutions.height));
+}
+
+void GameStates::initView()
+{
+	this->view.setSize(
+		sf::Vector2f(
+			static_cast<float>(this->stateData->gfxSettings->resolutions.width / 2),
+			static_cast<float>(this->stateData->gfxSettings->resolutions.height / 2)
+		)
+	);
+
+	this->view.setCenter(
+		sf::Vector2f(
+			static_cast<float>(this->stateData->gfxSettings->resolutions.width) / 2.f,
+			static_cast<float>(this->stateData->gfxSettings->resolutions.height) / 2.f
+		)
+	);
+}
+
 void GameStates::initKeybinds()
 {
 	ifstream ifs("Config/gamestate_keybinds.ini");
@@ -36,15 +61,17 @@ void GameStates::InitFonts()
 	}
 }
 
-void GameStates::initPauseMenu()
+void GameStates::initPauseMenu()//tyczy sie new game
 {
 	this->pauseMenu = new PausedMenu(*this->window, this->font);
-	this->pauseMenu->addButtons("Quit", 100.f, 100.f, "Quit");
+	this->pauseMenu->addButtons("Quit", 250.f, 500.f,100.f,50.f, "Quit");
+	/*this->pauseMenu->addButtons("Save", 250.f, 800.f,100.f,50.f, "Save");*/
 }
 
 void GameStates::initTileMap()
 {
-	this->tileMap = new TileMap(this->stateData->gridSize, 10, 10 );
+	this->tileMap = new TileMap(this->stateData->gridSize, 100, 100,"Resources/Images/tile/1.png" );//sprawdzic, czy ze zmiana dziala bylo 10 10
+	this->tileMap->loadFromFile("text.txt");// zmienic nazwe funkcji na loadFromFile
 }
 
 void GameStates::initPlayers()
@@ -57,12 +84,16 @@ void GameStates::initPlayers()
 
 GameStates::GameStates(StateData* stateData):State(stateData)
 {
+	this->iniDefferedRender();
+	this->initView();
 	this->initKeybinds();
-	this->initTextures();
 	this->InitFonts();
+	this->initTextures();
 	this->initPauseMenu();
 	this->initPlayers();
 	this->initTileMap();
+	
+	
 }
 
 GameStates::~GameStates()
@@ -72,26 +103,38 @@ GameStates::~GameStates()
 	delete this->tileMap;
 }
 
+void GameStates::updateView(const float& dt)
+{
+	this->view.setCenter(floor(this->player->getPosition().x), floor(this->player->getPosition().y));//powinno ustawic srodek kamery, tam gdzie bedzie nasz player,trzeba ta funkcje uwzglednic we wszytskich update jak jest niezatrzymany, floor zaokraglanie w dol
+}
+
 void GameStates::update(const float& dt)
 {
-	this->updateMousePosition();
+	this->updateMousePosition(&this->view);
 	this->updateKeyTime(dt);
 	this->updateInput(dt);
 	
 	if (!paused)//jezeli nie ma pauzy to ciagle aktualizuj
 	{
-	
+		this->updateView(dt);
 		this->updatePlayerInput(dt);
+		this->updateTileMap(dt);//musze sprawdzic kolizje przed ruszeniem postaci, koniecznie o tym pamietaj
 		this->player->update(dt);
 	}
 	else
 	{
 		
-		this->pauseMenu->update(this->mousePostView);
+		this->pauseMenu->update(this->mousePostWindow);
 		this->updatePauseMenuButtons();
 		
 	}
 
+}
+
+void GameStates::updateTileMap(const float& dt)
+{
+	this->tileMap->update();
+	this->tileMap->updateCollision(this->player,dt);
 }
 
 
@@ -102,13 +145,18 @@ void GameStates::render(RenderTarget* target)
 		target = this->window;
 	}
 	cout << "Render map w GS" << endl;
-	this->tileMap->render(*target);
-	this->player->render(*target);
+	this->renderTexture.clear();
+	renderTexture.setView(this->view);
+	this->tileMap->render(renderTexture,player);
+	this->player->render(renderTexture);
 	if (this->paused)
 	{
-		this->pauseMenu->render(*target);
+		renderTexture.setView(this->renderTexture.getDefaultView());
+		this->pauseMenu->render(renderTexture);
 	}
-	
+	this->renderTexture.display();
+	this->renderSprite.setTexture(this->renderTexture.getTexture());
+	target->draw(renderSprite);
 }
 
 void GameStates::updatePlayerInput(const float& dt)//sprawdzoen,dziala
@@ -140,7 +188,7 @@ void GameStates::updatePlayerInput(const float& dt)//sprawdzoen,dziala
 
 void GameStates::updateInput(const float dt)
 {
-	if (Keyboard::isKeyPressed(Keyboard::Escape) && this->getKeyTime())//jak bedziesz miala czas do zmien na keybinds itp.
+	if (sf::Keyboard::isKeyPressed(Keyboard::Escape)/*::Key(this->keybinds.at("Close")*/ && this->getKeyTime())//jak bedziesz miala czas do zmien na keybinds itp.
 	{
 		if (!this->paused)
 		{
