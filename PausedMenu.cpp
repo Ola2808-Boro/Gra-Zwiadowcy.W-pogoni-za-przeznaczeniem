@@ -35,11 +35,11 @@ map<string, gui::Button*>& PausedMenu::getButtons()
 
 
 //Funckje
-void PausedMenu::update(Vector2f mousePos)
+void PausedMenu::update(Vector2i& mousePostWindow)
 {
 	for (auto & i :this->buttons)
 	{
-		i.second->update(mousePos);
+		i.second->update(mousePostWindow);
 
 	}
 }
@@ -55,12 +55,12 @@ void PausedMenu::render(RenderTarget& target)
 	target.draw(menuText);
 }
 
-void PausedMenu::addButtons(string key,float x,float y, string text)
+void PausedMenu::addButtons(string key,float x,float y,float width,float height, string text)
 {
-	float width = 250.f;
-	x = this->container.getPosition().x + container.getSize().x/3.f;//dopasowac pod rozmiar
-	y = this->container.getPosition().y + container.getSize().y / 4.f;//dopasowac pod rozmiar
-	this->buttons[key] = new gui::Button(x, y, 150, 50, text, this->font, Color::Blue, Color::Cyan, Color::Yellow, Color::Black,Color::Red,Color::Yellow, 20, Color::Red, Color::Yellow, Color::White, 0);
+	 x = this->container.getPosition().x + this->container.getSize().x / 2.f - width / 2.f;
+	//x = this->container.getPosition().x + container.getSize().x/3.f;//dopasowac pod rozmiar
+	//y = this->container.getPosition().y + container.getSize().y / 4.f;//dopasowac pod rozmiar
+	this->buttons[key] = new gui::Button(x, y, width, height, text, this->font, Color::Blue, Color::Cyan, Color::Yellow, Color::Black,Color::Red,Color::Yellow, 20, Color::Red, Color::Yellow, Color::White, 0);
 }
 
 const bool& PausedMenu::isButtonPressed(const string key) 
