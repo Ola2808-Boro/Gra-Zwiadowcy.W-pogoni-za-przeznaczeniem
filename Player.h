@@ -2,6 +2,7 @@
 #define  PLAYER_H
 
 #include "Entity.h"//donrze
+class Entity;
 
 class Player :
     public Entity
@@ -16,6 +17,9 @@ public:
     Player(float x, float y, Texture& texture_sheet);
     virtual ~Player();
     void update(const float& dt);
+    void render(RenderTarget& target);
+    void updateAnimation(const float& dt);
+    void updateAttack();
   
  
 
