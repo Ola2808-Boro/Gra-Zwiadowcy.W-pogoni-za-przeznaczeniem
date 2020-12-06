@@ -105,7 +105,7 @@ void SettingState::updateGui(const float& dt)
 	//wszytsko do button
 	for (auto& it : this->buttons)
 	{
-		it.second->update(mousePostView);
+		it.second->update(mousePostWindow);
 	}
 	if (this->buttons["Back"]->isPressed())//wychodze , pomyslec nad tym, bo ma cos do glownego menu, a wyrzucqa z gry
 	{
@@ -119,7 +119,7 @@ void SettingState::updateGui(const float& dt)
 	//wszytsko do listy
 	for (auto& it : this->dropDownList)
 	{
-		it.second->update(mousePostView,dt);
+		it.second->update(mousePostWindow,dt);
 	}
 	
 }
@@ -168,4 +168,5 @@ void SettingState::updatePlayerInput(const float& dt)
 {
 
 }
+
 
