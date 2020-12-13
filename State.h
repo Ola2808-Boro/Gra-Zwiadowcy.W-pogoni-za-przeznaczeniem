@@ -48,7 +48,7 @@ protected:
 							  a w drugim typu int.*/
 	Vector2i mousePostWindow;
 	Vector2f mousePostView;
-	Vector2u mousePosGrid;
+	Vector2i mousePosGrid;
 
 	virtual void initKeybinds() = 0;
 
@@ -59,18 +59,19 @@ public:
 	const bool& getQuit() const;
 	const bool getKeyTime();
 
-	void endState();
-
 	//virtual void endStateUpdate() = 0;//virtual
 	virtual void updatePlayerInput(const float& dt) = 0;//virtual
 	virtual void render(RenderTarget *target=NULL) = 0;//virtual
-	virtual void updateMousePosition();
+	virtual void updateMousePosition(View* view=NULL);
 	virtual void update(const float& dt) = 0;//virtual
 	virtual void updateKeyTime(const float& dt);
 
 	//funkcje do pasued
 	void pauseState();//kiedy jest pauza
 	void unpauseState();//kiedy nie ma pauzy
+	void endState();
+	const float p2pX(const float perc);
+	const float p2pY(const float perc);
 };
 
-#endif 
+#endif
