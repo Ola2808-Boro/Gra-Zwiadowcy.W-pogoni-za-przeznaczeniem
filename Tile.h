@@ -6,7 +6,8 @@
 enum TileTaps//wyliczanie
 {
 	DEFAULT = 0,
-	DAMAGING
+	DAMAGING,
+	DOODAD
 
 };
 
@@ -27,6 +28,7 @@ public:
 	const string getAsString()const;
 	const FloatRect getGlobalBounds() const;
 	const Vector2f& getPosition() const;
+	const short& getType()const;
 
 	const bool intersects(const FloatRect bounds) const ;
 	const bool& getCollision() const;
@@ -38,3 +40,4 @@ public:
 
 };
 #endif // !TILE_H
+
