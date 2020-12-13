@@ -45,6 +45,14 @@ void State::endState()
 {
 	this->quit = true;
 }
+const float  State::p2pX(const float perc)//konwersja procentow na pixele
+{
+	return floor(static_cast<float>(this->stateData->gfxSettings->resolutions.width)* (perc / 100.f));
+}
+const float State::p2pY(const float perc)
+{
+	return floor(static_cast<float>(this->stateData->gfxSettings->resolutions.height) * (perc / 100.f));
+}
 //
 //void State::endStateUpdate()
 //{
@@ -54,14 +62,20 @@ void State::updatePlayerInput(const float& dt)
 {
 }
 
-void State::updateMousePosition()
+void State::updateMousePosition(View* view)
 {
 	this->mousePostScreen = Mouse::getPosition();
 	this->mousePostWindow = Mouse::getPosition(*this->window);
-	this->mousePostView=this->window->mapPixelToCoords(Mouse::getPosition(*this->window));
-	this->mousePosGrid = Vector2u(static_cast<unsigned>(mousePostView.x)/static_cast<unsigned>(this->gridSize), static_cast<unsigned>(mousePostView.y) / static_cast<unsigned>(this->gridSize));
-	
+	if (view)
+	{
+		window->setView(*view);
 
+	}
+	
+	this->mousePostView=this->window->mapPixelToCoords(Mouse::getPosition(*this->window));// ekran na scene
+	this->mousePosGrid = Vector2i(static_cast<int>(mousePostView.x)/static_cast<int>(this->gridSize), static_cast<int>(mousePostView.y) / static_cast<int>(this->gridSize));
+	
+	this->window->setView(this->window->getDefaultView());
 }
 
 void State::updateKeyTime(const float& dt)
@@ -81,5 +95,6 @@ void State::unpauseState()
 {
 	this->paused = false;
 }
+
 
 
