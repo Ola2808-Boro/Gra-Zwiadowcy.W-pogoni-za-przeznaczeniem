@@ -16,10 +16,17 @@ private:
 public:
     Player(float x, float y, Texture& texture_sheet);
     virtual ~Player();
+
+    AttributeComponent* getAttributeComponent();
+
     void update(const float& dt);
     void render(RenderTarget& target);
     void updateAnimation(const float& dt);
     void updateAttack();
+    void loseHp(const int hp);
+    void gainHp(const int hp);
+    void loseExp(const int exp);
+    void gainExp(const int exp);
   
  
 
