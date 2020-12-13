@@ -64,6 +64,7 @@ void EditorState::initVariables()
 	this->collision = false;
 	this->type = TileTaps::DEFAULT;//jest w Tile.h DEFAULT=0
 	this->cameraSpeed = 10000.f;//jest w klasie EditorState, bede mnaozyc razy dt
+	this->layer = 0;
 }
 
 
@@ -106,7 +107,7 @@ void EditorState::initPauseMenu()
 void EditorState::initTileMap()
 {
 	//float gridSize, unsigned width, unsigned height
-	this->tileMap = new TileMap(this->stateData->gridSize,100,100,"Resources/Images/tile/1.png");// nie daje jej tego wszytskiego, co StateSetting, MainMenuState itd
+	this->tileMap = new TileMap(this->stateData->gridSize,100,100,"Resources/Images/tile/tilesheet1.png");// nie daje jej tego wszytskiego, co StateSetting, MainMenuState itd
 }
 void EditorState::initGui()
 {
@@ -123,7 +124,7 @@ void EditorState::initGui()
 	this->selectorRect.setTexture(this->tileMap->getTileTextureSheet());
 	this->selectorRect.setTextureRect(texture_Rect);
 
-	this->textureSeletor = new gui::TextureSelector(20.f,20.f,500.f,500.f,this->stateData->gridSize,this->tileMap->getTileTextureSheet(),font,"Cos tam");
+	this->textureSeletor = new gui::TextureSelector(20.f,20.f,800.f,200.f,this->stateData->gridSize,this->tileMap->getTileTextureSheet(),font,"Tz");
 }
 void EditorState::initText()
 {
@@ -154,7 +155,7 @@ void EditorState::updateGui(const float &dt)
 	}
 	cursorText.setPosition(mousePostView.x, mousePostView.y - 50.f);
 	std::stringstream s;
-	s<<this-> mousePostView.x << " " << mousePostView.y <<" "<< texture_Rect.left << " " << texture_Rect.top <<" "<<"Collision"<<" "<<this->collision<<" "<<"Type"<<" "<<this->type<< endl;
+	s<<this-> mousePostView.x << " " << mousePostView.y <<" "<<mousePosGrid.x<<" "<<mousePosGrid.y<<" "<< texture_Rect.left << " " << texture_Rect.top <<" "<<"Collision"<<" "<<this->collision<<" "<<"Type"<<" "<<this->type<<"Tiles: "<<this->tileMap->getLayerSize(mousePosGrid.x,mousePosGrid.y,this->layer)<< endl;
 	cursorText.setString(s.str());
 }
 
@@ -234,7 +235,8 @@ void EditorState::render(RenderTarget* target)
 		target = this->window;
 	}
 	target->setView(this->view);
-	this->tileMap->render(*target);
+	this->tileMap->render(*target,this->mousePosGrid);
+	this->tileMap->renderDeferred(*target);
 	target->setView(this->window->getDefaultView());
 	this->renderButtton(*target);
 	this->renderGui(*target);
