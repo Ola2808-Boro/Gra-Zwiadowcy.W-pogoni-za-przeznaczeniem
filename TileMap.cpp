@@ -82,7 +82,23 @@ TileMap::~TileMap()
 	this->clear();
 }
 
-Texture* TileMap::getTileTextureSheet() 
+const int TileMap::getLayerSize(const int x, const int y, const int layer) const
+{
+	if (x >= 0 && x < static_cast<int>(this->map.size()))
+	{
+		if (y >= 0 && y < static_cast<int>(this->map[x].size()))
+		{
+			if (layer >= 0 && layer < static_cast<int>(this->map[x][y].size()))
+			{
+				return this->map[x][y][layer].size();
+			}
+		}
+	}
+
+	return -1;
+}
+
+const Texture* TileMap::getTileTextureSheet() const
 {
 	return &this->tileTextureSheet;
 }
@@ -91,13 +107,11 @@ void TileMap::update()
 {
 }
 
-void TileMap::render(RenderTarget& target, Entity* entity)
+void TileMap::render(RenderTarget& target, const Vector2i& gridPosition)
 {
 	this->layer = 0;
 
-	if (entity)
-	{
-		this->fromX = entity->getGridPosition(gridSizeI).x - 5;
+		this->fromX =gridPosition.x - 5;
 		if (this->fromX < 0)
 		{
 			fromX = 0;
@@ -109,7 +123,7 @@ void TileMap::render(RenderTarget& target, Entity* entity)
 
 
 
-		this->toX = entity->getGridPosition(gridSizeI).x + 8;
+		this->toX = gridPosition.x + 8;
 		if (this->toX < 0)
 		{
 			toX = 0;
@@ -121,7 +135,7 @@ void TileMap::render(RenderTarget& target, Entity* entity)
 
 
 
-		this->fromY = entity->getGridPosition(gridSizeI).y - 5;
+		this->fromY = gridPosition.y - 5;
 		if (this->fromY < 0)
 		{
 			fromY = 0;
@@ -133,7 +147,7 @@ void TileMap::render(RenderTarget& target, Entity* entity)
 
 
 
-		this->toY = entity->getGridPosition(gridSizeI).y + 8;
+		this->toY = gridPosition.y + 8;
 		if (this->toY < 0)
 		{
 			toY = 0;
@@ -150,7 +164,14 @@ void TileMap::render(RenderTarget& target, Entity* entity)
 			{
 				for (size_t k = 0; k < map[x][y][this->layer].size(); k++)
 				{
-					this->map[x][y][this->layer][k]->render(target);
+					if (this->map[x][y][this->layer][k]->getType()==TileTaps::DOODAD)
+					{
+						this->deferedrenderStack.push(this->map[x][y][this->layer][k]);
+					}
+					else
+					{
+						this->map[x][y][this->layer][k]->render(target);
+					}
 					if (this->map[x][y][this->layer][k]->getCollision())
 					{
 						this->collisonBox.setPosition(this->map[x][y][this->layer][k]->getPosition());
@@ -162,33 +183,41 @@ void TileMap::render(RenderTarget& target, Entity* entity)
 			}
 
 		}
-	}
-	//else
-	//{
-	//	for (auto& x : this->map)
-	//	{
-	//		for (auto& y : x)
-	//		{
-	//			for (auto* z : y)
-	//			{
-	//				if (z != NULL)
-	//				{
-	//					z->render(target);
-	//					if (z->getCollision())
-	//					{
-	//						this->collisonBox.setPosition(z->getPosition());
-	//						target.draw(this->collisonBox);
-	//					}
-	//				}
+	
+		for (auto& x : this->map)
+		{
+			for (auto& y : x)
+			{
+				for (auto &z : y)
+				{
+					for (auto* k : z)
+					{
+						k->render(target);
+						if (k->getCollision())
+						{
+							this->collisonBox.setPosition(k->getPosition());
+							target.draw(this->collisonBox);
+						}
+						}
+				
 
-	//			}
-	//		}
-	//	}
+				}
+			}
+		}
 
-
-	//}
 
 	
+
+	
+}
+
+void TileMap::renderDeferred(RenderTarget& target)
+{
+	while (!this->deferedrenderStack.empty())
+	{
+		deferedrenderStack.top()->render(target);
+		deferedrenderStack.pop();
+	}
 }
 
 void TileMap::addTile(const int x, const int y, const int z,const IntRect& texture_rect, const bool& collision, const short& type)
