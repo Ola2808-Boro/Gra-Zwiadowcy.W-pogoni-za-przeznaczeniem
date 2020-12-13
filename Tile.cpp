@@ -50,6 +50,11 @@ const Vector2f& Tile::getPosition() const
 	return this->shape.getPosition();
 }
 
+const short& Tile::getType() const
+{
+	return type;
+}
+
 const bool Tile::intersects(const FloatRect bounds) const
 {
 	return this->shape.getGlobalBounds().intersects(bounds);
