@@ -4,7 +4,8 @@
 #include "State.h"
 #include "PausedMenu.h"
 #include "TileMap.h"
-
+#include "PlayerGui.h"
+//
 //class PausedMenu;
 //class Player;
 //class TileMap;
@@ -19,6 +20,7 @@ private:
 	RenderTexture renderTexture;
 	Sprite renderSprite;
 	Player *player;
+	PlayerGui* playerGui;
 	Font font;
 	PausedMenu *pauseMenu;
 	TileMap *tileMap;
@@ -31,6 +33,7 @@ private:
 	void InitFonts();
 	void initPauseMenu();
 	void initTileMap();
+	void initPlayerGui();
 
 
 public:
@@ -41,6 +44,7 @@ public:
 	void updateTileMap(const float& dt);
 	void render(RenderTarget* target=nullptr);
 	void updatePlayerInput(const float& dt);//W,S,A,D
+	void updatePlayerGui(const float& dt);
 	void updateInput(const float dt);//przyciski
 	void updatePauseMenuButtons();
 	Texture temp;//pomoc do zaladowania struktury
