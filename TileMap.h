@@ -16,6 +16,7 @@ private:
 	Vector2f maxSizeWorldF;//f
 	Vector2i maxSizeWorldGrid;// int
 	vector< vector<vector <vector<Tile*>> > >  map;
+	stack <Tile*> deferedrenderStack;
 	Texture tileTextureSheet;
 	string textureFile;
 	RectangleShape collisonBox;
@@ -33,11 +34,13 @@ public:
 	//Destruktor
 	virtual~TileMap();
 
-	Texture* getTileTextureSheet() ;//const, zeby bylo bezpieczne
+	const Texture* getTileTextureSheet() const ;//const, zeby bylo bezpieczne
+	const int getLayerSize(const int x, const int y, const int layer) const;
 
 	//Funkcje
 	void update();
-	void render(RenderTarget& target, Entity* entity=NULL);
+	void render(RenderTarget& target,const Vector2i& gridPosition);
+	void renderDeferred(RenderTarget& target);
 	void addTile(const int x, const int y, const int z, const IntRect& texture_rect,const bool& collision,const short& type);
 	void removeTile(const int x, const int y, const int z);
 	void saveToFile(const string file_name);
