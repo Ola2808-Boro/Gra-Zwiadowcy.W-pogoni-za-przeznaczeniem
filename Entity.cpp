@@ -20,6 +20,7 @@ Entity::~Entity()
 	delete this->movementComponent;
 	delete this->animationcomponent;
 	delete this->hitboxcomponent;
+	delete this->attributeComponent;
 }
 
 void Entity::setTexture(Texture& texture)
@@ -42,6 +43,11 @@ void Entity::createAnimationComponent( Texture& texture_sheet)
 void Entity::createHitboxComponent(Sprite& sprite, float offset_x, float offset_y, float width, float height)
 {
 	this->hitboxcomponent = new HitboxComponent(this->sprite,offset_x,offset_y,width,height);
+}
+
+void Entity::creatAttributeComponent(const int level)
+{
+	this->attributeComponent = new AttributeComponent(level);//sprawdz czy usuwasz pozniej
 }
 
 const FloatRect Entity::getGlobalBounds() const
@@ -107,12 +113,12 @@ void Entity::update(const float& dt)//na strzalki
 void Entity::render(RenderTarget &target)
 {
 	
-		//target.draw(this->sprite);
-		//if (this->hitboxcomponent)//jezeli istnieje
-		//{
-		//	hitboxcomponent->render(target);
+		target.draw(this->sprite);
+		if (this->hitboxcomponent)//jezeli istnieje
+		{
+			hitboxcomponent->render(target);
 
-		//}
+		}
 	
 }
 
@@ -150,4 +156,5 @@ void Entity::move(const float direction_x, const float  direction_y, const float
 	}
 	
 }
+
 
