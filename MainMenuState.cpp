@@ -31,10 +31,10 @@ void MainMenuState::InitFonts()
 void MainMenuState::initButtom()
 {
 	//(float x, float y, float width, float height, string text_button, Font font_button, Color hoverColor, Color activeColor, Color idleColor);
-	this->buttons["Game_State"] = new gui::Button(350, 100, 150, 50, "New Game", this->font, Color::Blue, Color::Cyan, Color::Yellow, Color::Yellow, Color::Red, Color::Black, 35, Color::Red, Color::Yellow, Color::White,0);
-	this->buttons["Exit_State"] = new gui::Button(350, 400, 150, 50, "Quit", this->font, Color::Blue, Color::Cyan, Color::Yellow, Color::Yellow, Color::Red, Color::Black, 35, Color::Red, Color::Yellow, Color::White,0);
-	this->buttons["Editor_State"] = new gui::Button(350, 300, 150, 50, "Editor", this->font, Color::Blue, Color::Cyan, Color::Yellow, Color::Yellow, Color::Red, Color::Black, 35, Color::Red, Color::Yellow, Color::White,0);
-	this->buttons["Settings_State"] = new gui::Button(350, 200, 150, 50, "Settings", this->font, Color::Blue, Color::Cyan, Color::Yellow, Color::Yellow, Color::Red, Color::Black, 35, Color::Red, Color::Yellow, Color::White,0);//sprobowac migania z 0
+	this->buttons["Game_State"] = new gui::Button(this->p2pX(15.6f), this->p2pY(44.4f), this->p2pX(13.f), this->p2pY(6.f), "New Game", this->font, Color::Blue, Color::Cyan, Color::Yellow, Color::Yellow, Color::Red, Color::Black, 35, Color::Red, Color::Yellow, Color::White,0);
+	this->buttons["Exit_State"] = new gui::Button(this->p2pX(15.6f), this->p2pY(53.7f), this->p2pX(13.f), this->p2pY(6.f), "Quit", this->font, Color::Blue, Color::Cyan, Color::Yellow, Color::Yellow, Color::Red, Color::Black, 35, Color::Red, Color::Yellow, Color::White,0);
+	this->buttons["Editor_State"] = new gui::Button(this->p2pX(15.6f), this->p2pY(63.f), this->p2pX(13.f), this->p2pY(6.f), "Editor", this->font, Color::Blue, Color::Cyan, Color::Yellow, Color::Yellow, Color::Red, Color::Black, 35, Color::Red, Color::Yellow, Color::White,0);
+	this->buttons["Settings_State"] = new gui::Button(this->p2pX(15.6f), this->p2pY(81.5f), this->p2pX(13.f), this->p2pY(6.f), "Settings", this->font, Color::Blue, Color::Cyan, Color::Yellow, Color::Yellow, Color::Red, Color::Black, 35, Color::Red, Color::Yellow, Color::White,0);//sprobowac migania z 0
 }
 
 void MainMenuState::initBackground()
