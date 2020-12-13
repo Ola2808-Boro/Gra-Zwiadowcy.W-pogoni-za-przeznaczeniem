@@ -70,8 +70,13 @@ void GameStates::initPauseMenu()//tyczy sie new game
 
 void GameStates::initTileMap()
 {
-	this->tileMap = new TileMap(this->stateData->gridSize, 100, 100,"Resources/Images/tile/1.png" );//sprawdzic, czy ze zmiana dziala bylo 10 10
+	this->tileMap = new TileMap(this->stateData->gridSize, 100, 100,"Resources/Images/tile/tilesheet1.png" );//sprawdzic, czy ze zmiana dziala bylo 10 10
 	this->tileMap->loadFromFile("text.txt");// zmienic nazwe funkcji na loadFromFile
+}
+
+void GameStates::initPlayerGui()
+{
+	this->playerGui = new PlayerGui(this->player);//sprawdzic czy jest w konstruktorze i destruktorze
 }
 
 void GameStates::initPlayers()
@@ -91,6 +96,7 @@ GameStates::GameStates(StateData* stateData):State(stateData)
 	this->initTextures();
 	this->initPauseMenu();
 	this->initPlayers();
+	this->initPlayerGui();
 	this->initTileMap();
 	
 	
@@ -98,8 +104,9 @@ GameStates::GameStates(StateData* stateData):State(stateData)
 
 GameStates::~GameStates()
 {
-	delete this->player;
 	delete this->pauseMenu;
+	delete this->player;
+	delete this->playerGui;
 	delete this->tileMap;
 }
 
@@ -120,6 +127,7 @@ void GameStates::update(const float& dt)
 		this->updatePlayerInput(dt);
 		this->updateTileMap(dt);//musze sprawdzic kolizje przed ruszeniem postaci, koniecznie o tym pamietaj
 		this->player->update(dt);
+		this->playerGui->update(dt);
 	}
 	else
 	{
@@ -144,18 +152,21 @@ void GameStates::render(RenderTarget* target)
 	{
 		target = this->window;
 	}
-	cout << "Render map w GS" << endl;
+	/*cout << "Render map w GS" << endl;*/
 	this->renderTexture.clear();
 	renderTexture.setView(this->view);
-	this->tileMap->render(renderTexture,player);
+	this->tileMap->render(renderTexture,player->getGridPosition(static_cast<int>(this->stateData->gridSize)));
 	this->player->render(renderTexture);
+	this->tileMap->renderDeferred(this->renderTexture);
+	renderTexture.setView(this->renderTexture.getDefaultView());
+	this->playerGui->render(renderTexture);
 	if (this->paused)
 	{
-		renderTexture.setView(this->renderTexture.getDefaultView());
+		/*renderTexture.setView(this->renderTexture.getDefaultView());*/
 		this->pauseMenu->render(renderTexture);
 	}
 	this->renderTexture.display();
-	this->renderSprite.setTexture(this->renderTexture.getTexture());
+	//this->renderSprite.setTexture(this->renderTexture.getTexture());
 	target->draw(renderSprite);
 }
 
@@ -176,14 +187,27 @@ void GameStates::updatePlayerInput(const float& dt)//sprawdzoen,dziala
 	{
 		cout << "Powinno byc 22,a jest" << " " << keybinds.at("Move_Up") << endl;
 		this->player->move(0.f, -1.f, dt);
+		if (this->getKeyTime())
+		{
+			this->player->gainHp(1);
+		}
 	}
 	if (sf::Keyboard::isKeyPressed(Keyboard::Key(this->keybinds.at("Move_Down"))))
 	{
 		cout << "Powinno byc 18,a jest" << " " << keybinds.at("Move_Down") << endl;
 		this->player->move(0.f, 1.f, dt);
+		if (this->getKeyTime())
+		{
+			this->player->loseHp(1);
+		}
 	}
 	
 
+}
+
+void GameStates::updatePlayerGui(const float& dt)
+{
+	this->playerGui->update(dt);
 }
 
 void GameStates::updateInput(const float dt)
