@@ -3,13 +3,7 @@
 
 
 
-enum TileTaps//wyliczanie
-{
-	DEFAULT = 0,
-	DAMAGING,
-	DOODAD
-
-};
+enum TileTypes { DEFAULT = 0, DAMAGING, DOODAD, ENEMYSPAWNER };//wyliczanie
 
 class Tile
 {
@@ -22,7 +16,7 @@ protected:
 
 public:
 	Tile();
-	Tile(int grid_x, int grid_y,float gridSizeF,Texture& texture,const IntRect& texture_rect, bool collision = false, short type = TileTaps::DEFAULT);
+	Tile(int grid_x, int grid_y,float gridSizeF,Texture& texture,const IntRect& texture_rect, const bool collision = false, short type = TileTypes::DEFAULT);
 	virtual ~Tile();
 
 	const string getAsString()const;
@@ -34,8 +28,8 @@ public:
 	const bool& getCollision() const;
 
 	//Funkcje
-	void update();
-	void render(RenderTarget& target);
+	virtual void update() = 0;
+	virtual void render(RenderTarget& target, Shader* shader = NULL, const Vector2f player_position = Vector2f()) = 0;
 	
 
 };
