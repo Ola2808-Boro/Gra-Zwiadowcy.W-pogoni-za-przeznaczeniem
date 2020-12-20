@@ -45,14 +45,6 @@ void State::endState()
 {
 	this->quit = true;
 }
-const float  State::p2pX(const float perc)//konwersja procentow na pixele
-{
-	return floor(static_cast<float>(this->stateData->gfxSettings->resolutions.width)* (perc / 100.f));
-}
-const float State::p2pY(const float perc)
-{
-	return floor(static_cast<float>(this->stateData->gfxSettings->resolutions.height) * (perc / 100.f));
-}
 //
 //void State::endStateUpdate()
 //{
