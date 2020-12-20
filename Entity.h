@@ -6,11 +6,13 @@
 #include "MovementComponent.h"
 #include "AnimationComponent.h"
 #include "AttributeComponent.h"
+#include "SkillComponent.h"
 
 class HitboxComponent;
 class MovementComponent;
 class AnimationComponent;
 class AttributeComponent;
+class SkillComponent;
 
 class Entity
 {
@@ -26,6 +28,7 @@ protected:
 	AnimationComponent* animationcomponent;
 	HitboxComponent* hitboxcomponent;
 	AttributeComponent* attributeComponent;
+	SkillComponent* skillComponent;
 public:
 	Entity();
 	virtual ~Entity();
@@ -35,16 +38,17 @@ public:
 	void createAnimationComponent(Texture& texture_sheet);
 	void createHitboxComponent(Sprite &sprite, float offset_x, float offset_y, float width, float height);
 	void creatAttributeComponent(const int level);
+	void creatSkillComponent();
 
 	virtual const FloatRect getGlobalBounds()const;
 	virtual const Vector2f& getPosition()const;
 	virtual const Vector2i getGridPosition(const int GridSizeI)const;
-	virtual void setPosition(const float x, const float y);
 	virtual const FloatRect getNextPositionBounds(const float& dt) const;
+	virtual const Vector2f getCenter() const;
 
-
-	virtual void update(const float& dt)=0;
-	virtual void render(RenderTarget &target)=0;//virtual
+	virtual void setPosition(const float x, const float y);
+	virtual void update(const float& dt, Vector2f& mouse_pos_view)=0;
+	virtual void render(RenderTarget& target, Shader* shader, const Vector2f light_position, const bool show_hitbox) = 0;
 	virtual void stopVelocity();
 	virtual void stopVelocityX();
 	virtual void stopVelocityY();
