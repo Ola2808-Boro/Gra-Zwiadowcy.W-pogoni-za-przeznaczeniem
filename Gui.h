@@ -3,18 +3,18 @@
 
 //#include "GameStates.h"
 
-#include<SFML/Graphics.hpp>
-#include<SFML/Window.hpp>
-#include<SFML/System.hpp>
-#include<SFML/Audio.hpp>
-#include<SFMl/Network.hpp>
-#include<fstream>
-#include<iostream>
-#include<cstdlib>
-#include<ctime>
-#include<vector>
-using namespace std;
-using namespace sf;
+//#include<SFML/Graphics.hpp>
+//#include<SFML/Window.hpp>
+//#include<SFML/System.hpp>
+//#include<SFML/Audio.hpp>
+//#include<SFMl/Network.hpp>
+//#include<fstream>
+//#include<iostream>
+//#include<cstdlib>
+//#include<ctime>
+//#include<vector>
+//using namespace std;
+//using namespace sf;
 
 	enum button_states 
 	{
@@ -23,6 +23,10 @@ using namespace sf;
 	};//wylicznie
 	namespace gui
 	{
+		const float p2pX(const float perc,const VideoMode& vm);
+		const float p2pY(const float perc, const VideoMode& vm);
+		const unsigned calucuateCharacterSize(const VideoMode& vm, const unsigned modifier=60);
+		
 		class Button
 		{
 		private:
@@ -68,7 +72,7 @@ using namespace sf;
 
 		public:
 			Button(float x, float y, float width, float height, string text_button, Font font_button, Color hoverColor, Color activeColor, Color idleColor, Color outlinehoverColor,Color outlineidleColor,
-			Color outlineactiveColor, unsigned character_size, Color text_idle, Color text_hover, Color text_active, short unsigned id);
+			Color outlineactiveColor, unsigned character_size, Color text_idle, Color text_hover, Color text_active, short unsigned id=0);
 			~Button();
 			const bool isPressed()const;
 			const string getText()const;
@@ -131,5 +135,35 @@ using namespace sf;
 			void render(RenderTarget& target);
 			void updateKeyTime(const float& dt);
 		};
+
+		class ProgressBar
+		{
+
+		private:
+			Text progressBarText;
+			string progressBarString;
+			RectangleShape progressBarBack;
+			RectangleShape progressBarInner;
+			float progressBarMaxSizeWidth;
+			int maxValue;
+
+
+		public:
+			//konstruktor
+			ProgressBar(float new_x, float new_y, float new_width, float new_height, int max_value,Color inner_color,unsigned character_size, Font* font, VideoMode& vm);
+			//destruktor
+			~ProgressBar();
+
+
+			//funckje ulatwiajce dostep
+
+
+
+			//funckje
+			void updateProgressBar(const int current_value);
+			void renderProgressBar(RenderTarget& target);
+		};
 	}
 #endif // !BUTTON_H
+
+
