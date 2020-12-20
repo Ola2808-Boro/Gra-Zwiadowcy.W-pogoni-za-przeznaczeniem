@@ -5,38 +5,31 @@
 #include "PausedMenu.h"
 #include "Gui.h"
 #include "TileMap.h"
-
-class State;
-class Gui;
-class PausedMenu;
-class TileMap;
+#include "EditorModes.h"
+#include "DefaultMode.h"
 
 
-class EditorState :
-    public State
+
+enum EditorMode { DEFAULT_EDITOR_MODE = 0, ENEMY_EDITOR_MODE };
+
+class EditorState :public State
 {
 private:	
 
-
+	
 	   Font font;
 	   View view;
-	   Text cursorText;
+	   float cameraSpeed;
 	   //Button *gamestate_button;//obiekt klasy zajmujacej sie prostokatem
 	   map <string, gui::Button*> buttons;
 	   PausedMenu* pauseMenu;
 	   TileMap *tileMap;
-	   IntRect texture_Rect;
-	   RectangleShape selectorRect;
-	   gui::TextureSelector *textureSeletor;
+	   EditorStateData editorStateData;
 
-	   RectangleShape sidebar;
-	
+	   vector <EditorModes*> modes;//sprawdzic czy usniety w destruktorze 
 
-	   short type;
-	   bool collision;
-	   float cameraSpeed;
-	   float layer;
-	   //10
+	 
+	   //10 sprawdzic zgodnosc w konstruktorze
 	   void initView();
 	   void initKeybinds();
 	   void InitFonts();
@@ -46,11 +39,13 @@ private:
 	   void initPauseMenu();
 	   void initTileMap();
 	   void initGui();
-	   void initText();
+	   void initModes();
+	   void initEditorStateData();
 public:
 	EditorState(StateData* stateData);
 	void update(const float& dt);
-	void render(RenderTarget* target = nullptr);
+	void updateModes(const float& dt);
+	void render(RenderTarget* target = NULL);
 	void updatePlayerInput(const float& dt);
 	void updateEditorInput(const float& dt);
 	virtual ~EditorState();
@@ -59,6 +54,8 @@ public:
 	void updatePauseMenuButtons();
 	void renderButtton(RenderTarget& target);
 	void renderGui(RenderTarget& target);
+	void renderModes(RenderTarget& target);
   
 };
 #endif // !EDITORSTATE_H
+
