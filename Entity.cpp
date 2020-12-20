@@ -6,6 +6,8 @@ void Entity::initVariables()
 	this->hitboxcomponent = NULL;
 	this->animationcomponent = NULL;
 	this->movementComponent = NULL;
+	this->attributeComponent = NULL;
+	this->skillComponent = NULL;
 }
 
 Entity::Entity()
@@ -21,6 +23,7 @@ Entity::~Entity()
 	delete this->animationcomponent;
 	delete this->hitboxcomponent;
 	delete this->attributeComponent;
+	delete this->skillComponent;
 }
 
 void Entity::setTexture(Texture& texture)
@@ -37,7 +40,7 @@ void Entity::createMovementComponent(const float maxVelocity, const float accele
 
 void Entity::createAnimationComponent( Texture& texture_sheet)
 {
-	this->animationcomponent = new AnimationComponent(sprite, texture_sheet);
+	this->animationcomponent = new AnimationComponent(this->sprite, texture_sheet);
 }
 
 void Entity::createHitboxComponent(Sprite& sprite, float offset_x, float offset_y, float width, float height)
@@ -48,6 +51,11 @@ void Entity::createHitboxComponent(Sprite& sprite, float offset_x, float offset_
 void Entity::creatAttributeComponent(const int level)
 {
 	this->attributeComponent = new AttributeComponent(level);//sprawdz czy usuwasz pozniej
+}
+
+void Entity::creatSkillComponent()
+{
+	this->skillComponent = new SkillComponent();
 }
 
 const FloatRect Entity::getGlobalBounds() const
@@ -103,23 +111,14 @@ const FloatRect Entity::getNextPositionBounds(const float& dt) const
 	return sf::FloatRect(-1.f, -1.f, -1.f, -1.f);
 }
 
-
-
-void Entity::update(const float& dt)//na strzalki
+const Vector2f Entity::getCenter() const
 {
-	
-}
+	if (this->hitboxcomponent)
+	{
+		return this->hitboxcomponent->getPosition() + Vector2f(this->hitboxcomponent->getGlobalBounds().width / 2.f, this->hitboxcomponent->getGlobalBounds().height / 2.f);
+	}
 
-void Entity::render(RenderTarget &target)
-{
-	
-		target.draw(this->sprite);
-		if (this->hitboxcomponent)//jezeli istnieje
-		{
-			hitboxcomponent->render(target);
-
-		}
-	
+	return this->sprite.getPosition() +Vector2f(this->sprite.getGlobalBounds().width / 2.f,this->sprite.getGlobalBounds().height / 2.f);
 }
 
 void Entity::stopVelocity()
@@ -150,8 +149,13 @@ void Entity::move(const float direction_x, const float  direction_y, const float
 {
 	if (this->movementComponent)//jezeli itnieje
 	{
-		cout << "Istnieje" << endl;
+		//cout << "Istnieje" << endl;
 		this->movementComponent->move(direction_x, direction_y,dt);
+		
+	}
+	if (this->skillComponent)
+	{
+		this->skillComponent->gainExp(SKILLS::Endurance , 1);
 		
 	}
 	
