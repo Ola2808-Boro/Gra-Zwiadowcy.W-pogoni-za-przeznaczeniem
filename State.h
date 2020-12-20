@@ -40,7 +40,7 @@ protected:
 	float keyTime;
 	float keyTimeMax;
 	float gridSize;
-	map<string,Texture*> textures;
+	map<string,Texture> textures;
 	Vector2i mousePostScreen; /*Vector2 to klasa(właściwie to template klasy) 
 							  składająca się z dwóch zmiennych.Vector2f i Vector2i
 							  to typedefy dla odpowiednio Vector2<float> i Vector2<int>.
@@ -70,8 +70,7 @@ public:
 	void pauseState();//kiedy jest pauza
 	void unpauseState();//kiedy nie ma pauzy
 	void endState();
-	const float p2pX(const float perc);
-	const float p2pY(const float perc);
+	
 };
 
-#endif
+#endif 
