@@ -2,7 +2,7 @@
 #include "PlayerGui.h"
 
 
-PlayerGui::PlayerGui(Player* player)
+PlayerGui::PlayerGui(Player* player, VideoMode& vm):vm(vm)
 {
 	this->player = player;
 	this->initFont();
@@ -13,6 +13,8 @@ PlayerGui::PlayerGui(Player* player)
 
 PlayerGui::~PlayerGui()
 {
+	delete this->hpBar;
+	delete this->expBar;
 }
 
 void PlayerGui::initFont()
@@ -22,13 +24,16 @@ void PlayerGui::initFont()
 
 void PlayerGui::initHPBar()
 {
-	float width =300.f ;
+	this->hpBar = new gui::ProgressBar(1.f, 8.3f, 10.4f, 2.8f,this->player->getAttributeComponent()->hpMax,Color::Red,180,&this->font, this->vm );
+
+	//zastapione przez klase stworzona w Gui
+	/*float width = gui::p2pX(10.4f, this->vm);
+	float height = gui::p2pY(1.8f, this->vm);
+	float x = gui::p2pX(1.f, this->vm);
+	float y = gui::p2pY(8.3f, this->vm);
 	this->hpBarMaxSizeWidth = width;
-	float height = 50.f;
-	float x = 20.f;
-	float y = 20.f;
 	this->hpBarText.setFont(font);
-	this->hpBarText.setCharacterSize(16);
+	this->hpBarText.setCharacterSize(gui::calucuateCharacterSize(this->vm, 150));
 
 	this->hpBarBack.setSize(Vector2f(width, height));
 	this->hpBarBack.setFillColor(Color(50, 50, 50, 200));
@@ -38,18 +43,22 @@ void PlayerGui::initHPBar()
 	this->hpBarInner.setFillColor(Color(250, 20, 20, 200));
 	this->hpBarInner.setPosition(this->hpBarBack.getPosition());
 
-	this->hpBarText.setPosition(this->hpBarInner.getPosition().x + 10.f, this->hpBarInner.getPosition().y + 5.f);
+	this->hpBarText.setPosition(this->hpBarInner.getPosition().x + 10.f, this->hpBarInner.getPosition().y + 5.f);*/
 }
 
 void PlayerGui::initExpBar()//bedzie nizej niz hp
 {
-	float width = 200.f;
+
+	this->expBar = new gui::ProgressBar(1.f, 5.6f, 10.4f, 1.9f, this->player->getAttributeComponent()->exp,Color::Blue,220, &this->font, this->vm);
+
+	/*float width = gui::p2pX(10.4f, this->vm);
+	float height = gui::p2pY(1.9f, this->vm);
+	float x = gui::p2pX(1.f, this->vm);
+	float y = gui::p2pY(5.6f, this->vm);
 	this->expBarMaxSizeWidth = width;
-	float height = 50.f;
-	float x = 20.f;
-	float y = 80.f;
+
 	this->expBarText.setFont(font);
-	this->expBarText.setCharacterSize(14);
+	this->expBarText.setCharacterSize(gui::calucuateCharacterSize(this->vm, 200));
 
 	this->expBarBack.setSize(Vector2f(width, height));
 	this->expBarBack.setFillColor(Color(50, 50, 50, 200));
@@ -59,24 +68,23 @@ void PlayerGui::initExpBar()//bedzie nizej niz hp
 	this->expBarInner.setFillColor(Color(20, 250, 20, 200));
 	this->expBarInner.setPosition(this->expBarBack.getPosition());
 
-	this->expBarText.setPosition(this->expBarInner.getPosition().x + 10.f, this->expBarInner.getPosition().y + 5.f);
+	this->expBarText.setPosition(this->expBarInner.getPosition().x + this->levelElementBack.getPosition().x + gui::p2pX(0.53f, this->vm), this->expBarInner.getPosition().y + this->levelElementBack.getPosition().x + gui::p2pY(0.15f, this->vm));*/
 }
 
 void PlayerGui::initLevelElement()
 {
-	float width = 50.f;
-	float height = 40.f;
-	float x = 20.f;
-	float y = 20.f;
+	float width = gui::p2pX(1.6f, this->vm);
+	float height = gui::p2pY(2.8f, this->vm);
+	float x = gui::p2pX(1.f, this->vm);
+	float y = gui::p2pY(1.9f, this->vm);
 
-	this->levelElementText.setFont(font);
-	this->levelElementText.setCharacterSize(18);
-
-	this->levelElementBack.setSize(Vector2f(width, height));
-	this->levelElementBack.setFillColor(Color(50, 50, 50, 200));
+	this->levelElementBack.setSize(sf::Vector2f(width, height));
+	this->levelElementBack.setFillColor(sf::Color(50, 50, 50, 200));
 	this->levelElementBack.setPosition(x, y);
 
-	this->levelElementText.setPosition(this->levelElementBack.getPosition().x + 10.f, this->levelElementBack.getPosition().y + 5.f);
+	this->levelElementText.setFont(this->font);
+	this->levelElementText.setCharacterSize(gui::calucuateCharacterSize(this->vm, 150));
+	this->levelElementText.setPosition(this->levelElementBack.getPosition().x + gui::p2pX(0.53f, this->vm), this->levelElementBack.getPosition().y + gui::p2pY(0.5f, this->vm));
 }
 
 
@@ -96,17 +104,13 @@ void PlayerGui::render(RenderTarget& target)
 
 void PlayerGui::renderHPBar(RenderTarget& target)
 {
-	target.draw(hpBarBack);
-	target.draw(hpBarInner);
-	target.draw(hpBarText);
+	this->hpBar->renderProgressBar(target);
 
 }
 
 void PlayerGui::renderExpBar(RenderTarget& target)
 {
-	target.draw(expBarBack);
-	target.draw(expBarInner);
-	target.draw(expBarText);
+	this->expBar->renderProgressBar(target);
 }
 
 void PlayerGui::renderLevelElement(RenderTarget& target)
@@ -117,11 +121,7 @@ void PlayerGui::renderLevelElement(RenderTarget& target)
 
 void PlayerGui::updateHPBar()
 {
-	//dzielenie hp na hpmax
-	float percent =static_cast<float>(this->player->getAttributeComponent()->hp) / static_cast<float>(this->player->getAttributeComponent()->hpMax);
-	this->hpBarInner.setSize(Vector2f(static_cast<float>(floor(this->hpBarMaxSizeWidth*percent)),this->hpBarInner.getSize().y));
-	this->hpBarString = to_string(this->player->getAttributeComponent()->hp)+" / "+to_string(this->player->getAttributeComponent()->hpMax);
-	this->hpBarText.setString(this->hpBarString);
+	this->hpBar->updateProgressBar(this->player->getAttributeComponent()->hp);//(const int current_value), to bedzie moja biezaca wartosc dla klasy w Gui
 }
 
 void PlayerGui::updateLevelElement()
@@ -132,8 +132,5 @@ void PlayerGui::updateLevelElement()
 
 void PlayerGui::updateExpBar()
 {
-	float percent = static_cast<float>(this->player->getAttributeComponent()->exp) / static_cast<float>(this->player->getAttributeComponent()->expNext);
-	this->expBarInner.setSize(Vector2f(static_cast<float>(floor(this->expBarMaxSizeWidth * percent)), this->expBarInner.getSize().y));
-	this->expBarString = to_string(this->player->getAttributeComponent()->exp) + " / " + to_string(this->player->getAttributeComponent()->expNext);
-	this->expBarText.setString(this->expBarString);
+	this->expBar->updateProgressBar(this->player->getAttributeComponent()->exp);
 }
