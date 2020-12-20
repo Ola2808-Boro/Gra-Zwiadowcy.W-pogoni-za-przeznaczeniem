@@ -3,58 +3,71 @@
 
 void Player::initVariables()
 {
-	this->movementComponent = NULL;
-	this->animationcomponent = NULL;
+	this->attacking = false;
 }
 
 void Player::initComponents()
 {
-	this->attacking = false;
+	
+	this->movementComponent = NULL;
+	this->animationcomponent = NULL;
 }
 
-void Player::update(const float &dt)//dopasowuje tekstury do kierunku ruchu 
+void Player::initAnimation()//sprawdz czy jest w konstruktorze
+{
+	this->animationcomponent->addAnimation("IDLE", 15.f, 0, 0, 8, 0, 64, 64);
+	this->animationcomponent->addAnimation("WALK_DOWN", 11.f, 0, 1, 3, 1, 64, 64);
+	this->animationcomponent->addAnimation("WALK_LEFT", 11.f, 4, 1, 7, 1, 64, 64);
+	this->animationcomponent->addAnimation("WALK_RIGHT", 11.f, 8, 1, 11, 1, 64, 64);
+	this->animationcomponent->addAnimation("WALK_UP", 11.f, 12, 1, 15, 1, 64, 64);
+	this->animationcomponent->addAnimation("ATTACK", 5.f, 0, 2, 1, 2, 64, 64);
+}
+
+void Player::update(const float &dt, Vector2f& mouse_pos_view)//dopasowuje tekstury do kierunku ruchu(juz to jest w initAnimation)
 {
 	
-	movementComponent->update(dt);
+	this->movementComponent->update(dt);
 	this->updateAttack();
 	this->updateAnimation(dt);
-	hitboxcomponent->update();
+	this->hitboxcomponent->update();
+	this->sword->update(mouse_pos_view,this->getCenter());
 	
 }
 
-void Player::render(RenderTarget& target)
+void Player::render(RenderTarget& target, Shader* shader, const Vector2f light_position , const bool show_hitbox)
 {
+	if (shader)
+	{
 
-	this->hitboxcomponent->render(target);
+		shader->setUniform("hasTexture", true);
+		shader->setUniform("lightPos", light_position);
+		shader->setUniform("hasTexture", true);
+		shader->setUniform("lightPos", light_position);
+		/*this->weapon_sprite.render(target, shader)*/;
+		target.draw(this->sprite,shader);
+		this->sword->render(target,shader);
+	}
+	else
+	{
+		target.draw(this->sprite);
+		this->sword->render(target);
+	}
+	if (show_hitbox)
+	{
+		this->hitboxcomponent->render(target);
+	}
+
 	
 }
 
 void Player::updateAnimation(const float& dt)//do niej przesniose rzeczy z update a w update zrobie wywolanie tej funkcji
 {
-	if (this->animationcomponent->play("Attack", dt, true));//ustawiam priority na true,ale Attack nie dziala,spojrz na AnimationComponent
-	{//Ustawiam setOrigin(moj punkt zaczepienia)w zaleznosci do tego w jaka strone bedzie zwrocony
-		this->attacking = false;//ustawiam z powrotem)
-		if (this->sprite.getScale().x > 0.f)//jezeli jest zwrocony w lewo(x narastaja )
-		{
-			sprite.setOrigin(96.f, 0.f);//za co bede go lapac
-		}
-		else//jezeli jest zwrocony w prawo
-		{
-			sprite.setOrigin(258.f+96.f, 0.f);//za co bede go lapac
-		}
-
-		if (this->animationcomponent->play("Attack", dt, true))
-		{
-			attacking= false;
-			sprite.setOrigin(9.f, 0.f);
-		}
-		else//jezeli jest zwrocony w prawo
-		{
-			sprite.setOrigin(258.f, 0.f);//za co bede go lapac
-		}
-	
+	if (this->attacking)
+	{
 
 	}
+
+
 	if (movementComponent->getStates(Idle))//zwroci prawde jak bedzie stal w miejscu
 	{
 		this->animationcomponent->play("Idle_left", dt);//rusza sie w miejscu
@@ -92,37 +105,25 @@ void Player::updateAnimation(const float& dt)//do niej przesniose rzeczy z updat
 
 void Player::updateAttack()//do tej funckji z update przenioslam rzeczy dotyczace ataku
 {
-	if (Mouse::isButtonPressed(Mouse::Right))
+	if (Mouse::isButtonPressed(Mouse::Left))
 	{
-		attacking = true;
+		this->attacking = true;
 	}
 }
 
 void Player::loseHp(const int hp)
 {
-	this->attributeComponent->hp -= hp;
-	if (this->attributeComponent->hp< 0)
-	{
-		attributeComponent->hp = 0;
-	}
+	this->attributeComponent->loseHp(hp);
 }
 
 void Player::gainHp(const int hp)
 {
-	this->attributeComponent->hp += hp;
-	if ((this->attributeComponent->hp)>(this->attributeComponent->hpMax))
-	{
-		attributeComponent->hp = this->attributeComponent->hpMax;
-	}
+	this->attributeComponent->gainHp(hp);
 }
 
 void Player::loseExp(const int exp)
 {
-	this->attributeComponent->exp -= exp;
-	if (this->attributeComponent->exp < 0)
-	{
-		attributeComponent->exp = 0;
-	}
+	this->attributeComponent->loseExp(exp);
 }
 
 void Player::gainExp(const int exp)
@@ -134,15 +135,15 @@ Player::Player(float x ,float y ,Texture &texture_sheet)
 {
 	this->initVariables();
 	this->initComponents();
-	this->setPosition(x, y);//ustawienie
 	this->createMovementComponent(300.f, 1500.f, 1000.f);;//przykladowa max predkosc
-	this->createHitboxComponent(sprite, 86.f, 74.f, 86.f, 111.f);
+	this->createHitboxComponent(this->sprite, 12.f, 10.f, 40.f, 54.f);
 	this->createAnimationComponent(texture_sheet);
 	this->creatAttributeComponent(1);//mam ta funkcje w klasie o tej nazwie
+	this->creatSkillComponent();
+	this->setPosition(x, y);//ustawienie
+	this->initAnimation();
 	
-	this->animationcomponent->addAnimation("Idle_left", 11.f, 0, 0, 13, 0, 192, 192);
-	this->animationcomponent->addAnimation("Walk_left", 6.f, 0, 1, 11, 1, 192, 192);
-	this->animationcomponent->addAnimation("Attack",    5.f, 0, 2, 13, 2, 384, 192);//jeszcze nie dziala,nadal nie mam pojecia 
+
 	
 }
 
