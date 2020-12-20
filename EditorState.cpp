@@ -60,11 +60,7 @@ void EditorState::initBackground()
 }
 void EditorState::initVariables()
 {
-	texture_Rect = IntRect(0, 0, static_cast<int>(this->stateData->gridSize), static_cast<int>(this->stateData->gridSize));
-	this->collision = false;
-	this->type = TileTaps::DEFAULT;//jest w Tile.h DEFAULT=0
-	this->cameraSpeed = 10000.f;//jest w klasie EditorState, bede mnaozyc razy dt
-	this->layer = 0;
+	this->cameraSpeed = 1000.f;
 }
 
 
@@ -74,15 +70,16 @@ EditorState::EditorState(StateData* stateData) :State(stateData)
 	//10
 
 	this->initVariables();
+	this->initEditorStateData();
 	this->initView();
 	this->InitFonts();
-	this->initText();
 	this->initKeybinds();
 	this->initBackground();
 	this->initPauseMenu();
 	this->initButtom();
 	this->initTileMap();
 	this->initGui();
+	this->initModes();
 
 }
 
@@ -95,43 +92,45 @@ EditorState::~EditorState()
 	}
 	delete this->pauseMenu;
 	delete this->tileMap;
-	delete this->textureSeletor;
+	for (size_t i = 0; i < this->modes.size(); i++)
+	{
+		delete this->modes[i];
+	}
 }
 void EditorState::initPauseMenu()
 {
-	this->pauseMenu = new PausedMenu(*this->window, this->font);
-	this->pauseMenu->addButtons("Quit", 250, 400.f,100.f,50.f, "Quit");
-	this->pauseMenu->addButtons("Save", 250.f, 800.f, 100.f, 50.f, "Save");//poprawic
-	this->pauseMenu->addButtons("Load", 250.f, 600.f, 100.f, 50.f, "Load");//poprawic
+	const VideoMode& vm = this->stateData->gfxSettings->resolutions;
+	//sprawdzone pod wzgledem id i dla bledy calculateCharacterSize
+	this->pauseMenu = new PausedMenu(this->stateData->gfxSettings->resolutions, this->font);
+	this->pauseMenu->addButtons("Quit", gui::p2pY(74.f, vm), gui::p2pX(13.f,vm), gui::p2pY(6.f, vm), gui::calucuateCharacterSize(vm), "Quit");
+	this->pauseMenu->addButtons("Save", gui::p2pY(46.f, vm), gui::p2pX(13.f, vm), gui::p2pY(6.f, vm), gui::calucuateCharacterSize(vm), "Save");//poprawic
+	this->pauseMenu->addButtons("Load", gui::p2pY(37.f, vm), gui::p2pX(13.f, vm), gui::p2pY(6.f, vm), gui::calucuateCharacterSize(vm), "Load");//poprawic
 }
 void EditorState::initTileMap()
 {
 	//float gridSize, unsigned width, unsigned height
-	this->tileMap = new TileMap(this->stateData->gridSize,100,100,"Resources/Images/tile/tilesheet1.png");// nie daje jej tego wszytskiego, co StateSetting, MainMenuState itd
+	this->tileMap = new TileMap(this->stateData->gridSize,10,10,"Resources/Images/tile/tilesheet1.png");// nie daje jej tego wszytskiego, co StateSetting, MainMenuState itd
 }
 void EditorState::initGui()
 {
-	this->sidebar.setSize(Vector2f(80.f,static_cast<float>(this->stateData->gfxSettings->resolutions.height)));
-	this->sidebar.setFillColor(Color(50, 50, 50, 100));
-	this->sidebar.setOutlineColor(Color(200, 200, 200, 100));
-	this->sidebar.setOutlineThickness(1.f);
-
-
-	this->selectorRect.setSize(Vector2f(this->stateData->gridSize, this->stateData->gridSize));
-	this->selectorRect.setFillColor(Color::Red);
-	this->selectorRect.setOutlineThickness(1.f);
-	this->selectorRect.setOutlineColor(Color::Green);
-	this->selectorRect.setTexture(this->tileMap->getTileTextureSheet());
-	this->selectorRect.setTextureRect(texture_Rect);
-
-	this->textureSeletor = new gui::TextureSelector(20.f,20.f,800.f,200.f,this->stateData->gridSize,this->tileMap->getTileTextureSheet(),font,"Tz");
+	
 }
-void EditorState::initText()
+
+void EditorState::initModes()
 {
-	cursorText.setFillColor(Color::Red);
-	cursorText.setFont(font);
-	cursorText.setCharacterSize(12);
-	cursorText.setPosition(mousePostView.x, mousePostView.y - 50.f);
+	this->modes.push_back(new DefaultMode(this->stateData, this->tileMap, &this->editorStateData));
+}
+void EditorState::initEditorStateData()
+{
+	this->editorStateData.view = &this->view;
+	this->editorStateData.font = &this->font;
+	this->editorStateData.keytime = &this->keyTime;
+	this->editorStateData.keytimeMax = &this->keyTimeMax;
+	this->editorStateData.keybinds = &this->keybinds;
+	this->editorStateData.mousePosGrid = &this->mousePosGrid;
+	this->editorStateData.mousePostScreen = &this->mousePostScreen;
+	this->editorStateData.mousePostView = &this->mousePostView;
+	this->editorStateData.mousePostWindow = &this->mousePostWindow;
 }
 void EditorState::updateButton()
 {
@@ -147,16 +146,6 @@ void EditorState::updateButton()
 
 void EditorState::updateGui(const float &dt)
 {
-	this->textureSeletor->update(mousePostWindow,dt);
-	if (!this->textureSeletor->getActive())
-	{
-		this->selectorRect.setTextureRect(texture_Rect);
-		this->selectorRect.setPosition(mousePosGrid.x * this->stateData->gridSize, mousePosGrid.y * this->stateData->gridSize);
-	}
-	cursorText.setPosition(mousePostView.x, mousePostView.y - 50.f);
-	std::stringstream s;
-	s<<this-> mousePostView.x << " " << mousePostView.y <<" "<<mousePosGrid.x<<" "<<mousePosGrid.y<<" "<< texture_Rect.left << " " << texture_Rect.top <<" "<<"Collision"<<" "<<this->collision<<" "<<"Type"<<" "<<this->type<<"Tiles: "<<this->tileMap->getLayerSize(mousePosGrid.x,mousePosGrid.y,this->layer)<< endl;
-	cursorText.setString(s.str());
 }
 
 void EditorState::updatePauseMenuButtons()
@@ -167,11 +156,11 @@ void EditorState::updatePauseMenuButtons()
 	}
 	if (this->pauseMenu->isButtonPressed("Save"))
 	{
-		this->tileMap->saveToFile("text.txt");
+		this->tileMap->saveToFile("text.ini");
 	}
 	if (this->pauseMenu->isButtonPressed("Load"))
 	{
-		this->tileMap->loadFromFile("text.txt");
+		this->tileMap->loadFromFile("text.ini");
 	}
 }
 
@@ -186,19 +175,12 @@ void EditorState::renderButtton(RenderTarget& target)
 
 void EditorState::renderGui(RenderTarget& target)
 {
-	if (!this->textureSeletor->getActive())
-	{
-		target.setView(view);
-		target.draw(selectorRect);
-	}
-	target.setView(this->window->getDefaultView());
-	this->textureSeletor->render(target);
-	target.draw(sidebar);
+	
+}
 
-	target.setView(view);
-	target.draw(cursorText);
-
-
+void EditorState::renderModes(RenderTarget& target)
+{
+	this->modes[EditorMode::DEFAULT_EDITOR_MODE]->render(target);
 }
 
 
@@ -209,11 +191,13 @@ void EditorState::update(const float& dt)
 	this->updateKeyTime(dt);
 	this->updatePlayerInput(dt);//to to samo co updateInput, jak masz czas to zmien
 
-	if (!paused)//jezeli nie ma pauzy to ciagle aktualizuj
+	if (!this->paused)//jezeli nie ma pauzy to ciagle aktualizuj
 	{
 		this->updateButton();
 		this->updateGui(dt);
 		this->updateEditorInput(dt);
+		this->updateModes(dt);
+		
 	}
 	else
 	{
@@ -226,7 +210,10 @@ void EditorState::update(const float& dt)
 
 }
 
-
+void EditorState::updateModes(const float& dt)
+{
+	this->modes[EditorMode::DEFAULT_EDITOR_MODE]->update(dt);
+}
 
 void EditorState::render(RenderTarget* target)
 {
@@ -235,18 +222,19 @@ void EditorState::render(RenderTarget* target)
 		target = this->window;
 	}
 	target->setView(this->view);
-	this->tileMap->render(*target,this->mousePosGrid);
+	this->tileMap->render(*target, this->mousePosGrid, NULL, Vector2f(), true);
 	this->tileMap->renderDeferred(*target);
 	target->setView(this->window->getDefaultView());
 	this->renderButtton(*target);
 	this->renderGui(*target);
+	this->renderModes(*target);
 	if (this->paused)
 	{
 		target->setView(this->window->getDefaultView());
 		this->pauseMenu->render(*target);
 	}
 	
-	target->draw(cursorText);
+	
 }
 
 void EditorState::updatePlayerInput(const float& dt)
@@ -284,52 +272,4 @@ void EditorState::updateEditorInput(const float& dt)
 	{
 		this->view.move(this->cameraSpeed * dt,0.f);
 	}
-
-	//Powinno dzialac dla mapy
-	if (Mouse::isButtonPressed(Mouse::Left) && this->getKeyTime())//dodam prostokaty
-	{
-		if (!this->sidebar.getGlobalBounds().contains(Vector2f(mousePostWindow)))
-		{
-			if (!this->textureSeletor->getActive())//jezeli nie wchodzi na basek z boku
-			{
-				this->tileMap->addTile(this->mousePosGrid.x, this->mousePosGrid.y, 0, texture_Rect,collision,type);
-			}
-			else
-			{
-				this->texture_Rect = this->textureSeletor->getTextureRect();
-			}
-		}
-		else if (Mouse::isButtonPressed(Mouse::Right) && this->getKeyTime())//usune prostokaty
-		{
-			if (!this->textureSeletor->getActive())
-			{
-				this->tileMap->removeTile(this->mousePosGrid.x, this->mousePosGrid.y, 0);
-			}
-		}
-		//Collision
-		if (Keyboard::isKeyPressed(Keyboard::Key(this->keybinds.at("Collision") && this->getKeyTime())))
-		{
-			if (collision)
-			{
-				collision = false;
-			}
-			else
-			{
-				collision = true;
-			}
-		}
-		else if (Keyboard::isKeyPressed(Keyboard::Key(this->keybinds.at("Increase_Type") && this->getKeyTime())))
-		{
-			type++;
-		}
-		else if (Keyboard::isKeyPressed(Keyboard::Key(this->keybinds.at("Decrease_Type") && this->getKeyTime())))
-		{
-			if (this->type > 0)
-			{
-				type--;
-			}
-		}
-	}
-
-	
 }
