@@ -2,6 +2,7 @@
 #define PLAYERGUI_H
 
 #include "Player.h"
+#include "Gui.h"
 class Player;
 //class RectangleShape;
 
@@ -9,6 +10,8 @@ class Player;
 class PlayerGui
 {
 private:
+
+	VideoMode& vm;
 	Player* player;
 	Font font;
 
@@ -19,25 +22,18 @@ private:
 
 
 	//exp
-	Text expBarText;
-	string expBarString;
-	RectangleShape expBarBack;
-	RectangleShape expBarInner;
-	float expBarMaxSizeWidth;
+	gui::ProgressBar* expBar;
 
 	//hp
-	Text hpBarText;
-	string hpBarString;
-	RectangleShape hpBarBack;
-	RectangleShape hpBarInner;
-	float hpBarMaxSizeWidth;
+	gui::ProgressBar* hpBar;
+
 
 	void initFont();
 	void initHPBar();
 	void initExpBar();
 	void initLevelElement();
 public:
-	PlayerGui(Player* player);
+	PlayerGui(Player* player,VideoMode& vm);
 	virtual~PlayerGui();
 
 	void update(const float& dt);
