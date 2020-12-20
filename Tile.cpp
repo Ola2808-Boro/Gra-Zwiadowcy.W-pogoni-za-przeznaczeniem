@@ -52,7 +52,7 @@ const Vector2f& Tile::getPosition() const
 
 const short& Tile::getType() const
 {
-	return type;
+	return this->type;
 }
 
 const bool Tile::intersects(const FloatRect bounds) const
@@ -64,7 +64,17 @@ void Tile::update()
 {
 }
 
-void Tile::render(RenderTarget& target)
+void Tile::render(RenderTarget& target,Shader* shader, const sf::Vector2f player_position)
 {
-	target.draw(shape);
+	if (shader)
+	{
+		shader->setUniform("hasTexture", true);
+		shader->setUniform("lightPos", player_position);
+		target.draw(this->shape,shader);
+	}
+	else
+	{
+		target.draw(this->shape);
+	}
 }
+
