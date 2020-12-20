@@ -1,21 +1,21 @@
 #include"stdafx.h"
 #include "PausedMenu.h"
 
-PausedMenu::PausedMenu(RenderWindow& window, Font& font):font(font)
+PausedMenu::PausedMenu(VideoMode& vm, Font& font):font(font)
 {
 	
-	this->background.setSize(Vector2f(static_cast<float>(window.getSize().x), static_cast<float>(window.getSize().y)));
+	this->background.setSize(Vector2f(static_cast<float>(vm.width), static_cast<float>(vm.height)));
 	background.setFillColor(Color(20, 20, 20, 100));
 	//conatinerem ustawiam wymiary tego okna
-	this->container.setSize(Vector2f(static_cast<float>((window.getSize().x)/2.f), static_cast<float>((window.getSize().y))));
+	this->container.setSize(Vector2f(static_cast<float>((vm.width)/2.f), static_cast<float>(vm.height)-gui::p2pY(9.3f,vm)));
 	container.setFillColor(Color(20, 20, 20));
-	container.setPosition(static_cast<float>(window.getSize().x/2.f-this->container.getSize().x/2.f),0.f);
+	container.setPosition(static_cast<float>(vm.width /2.f-this->container.getSize().x/2.f),0.f);
 
 	this->menuText.setFont(font);
 	this->menuText.setFillColor(Color(255, 255, 255));
-	this->menuText.setCharacterSize(60);
+	this->menuText.setCharacterSize(gui::calucuateCharacterSize(vm));//sprawdzone  dla bledy calculateCharacterSize
 	this->menuText.setString("PAUSED");
-	this->menuText.setPosition(Vector2f((container.getPosition().x+this->container.getSize().x/2.f-this->menuText.getGlobalBounds().width/2.f), (container.getPosition().y+20.f)));
+	this->menuText.setPosition(Vector2f((container.getPosition().x+this->container.getSize().x/2.f-this->menuText.getGlobalBounds().width/2.f), (container.getPosition().y+gui::p2pY(4.f,vm))));
 
 }
 
@@ -55,12 +55,13 @@ void PausedMenu::render(RenderTarget& target)
 	target.draw(menuText);
 }
 
-void PausedMenu::addButtons(string key,float x,float y,float width,float height, string text)
+void PausedMenu::addButtons(string key,float y,const float width,const float height,const unsigned char_size, string text)
 {
-	 x = this->container.getPosition().x + this->container.getSize().x / 2.f - width / 2.f;
+	
+	float x = this->container.getPosition().x + this->container.getSize().x / 2.f - width / 2.f;
 	//x = this->container.getPosition().x + container.getSize().x/3.f;//dopasowac pod rozmiar
 	//y = this->container.getPosition().y + container.getSize().y / 4.f;//dopasowac pod rozmiar
-	this->buttons[key] = new gui::Button(x, y, width, height, text, this->font, Color::Blue, Color::Cyan, Color::Yellow, Color::Black,Color::Red,Color::Yellow, 20, Color::Red, Color::Yellow, Color::White, 0);
+	this->buttons[key] = new gui::Button(x, y, width, height, text, this->font, Color::Blue, Color::Cyan, Color::Yellow, Color::Black,Color::Red,Color::Yellow, 20, Color::Red, Color::Yellow, Color::White);
 }
 
 const bool& PausedMenu::isButtonPressed(const string key) 
