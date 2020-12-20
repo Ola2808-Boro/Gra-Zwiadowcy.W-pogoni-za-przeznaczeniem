@@ -5,7 +5,6 @@
 
 class Gui;
 
-
 class PausedMenu
 {
 private:
@@ -17,13 +16,12 @@ private:
 
 
 public:
-	PausedMenu(RenderWindow &window,Font &font);
+	PausedMenu(VideoMode& vm,Font &font);
 	virtual ~PausedMenu();
 	map <string, gui::Button*>&getButtons();
 	void update(Vector2i& mousePostWindow);
 	void render(RenderTarget &target);
-	void addButtons(string key, float x, float y, float width, float height, string text);
+	void addButtons(string key, const float y, const float width, const float height,const unsigned char_size, string text);
 	const bool& isButtonPressed(const string key);
 };
 #endif // !PAUSED_MENU_H
-
