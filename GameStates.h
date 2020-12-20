@@ -5,6 +5,9 @@
 #include "PausedMenu.h"
 #include "TileMap.h"
 #include "PlayerGui.h"
+#include "Sword.h"
+#include "Bow.h"
+#include"Enemy.h"
 //
 //class PausedMenu;
 //class Player;
@@ -17,13 +20,19 @@ class GameStates:public State//inherit
 {
 private:
 	View view;
+	Vector2i viewGridPosition;
 	RenderTexture renderTexture;
 	Sprite renderSprite;
+
 	Player *player;
 	PlayerGui* playerGui;
+
+	vector<Enemy*> activeEnemies;
+
 	Font font;
 	PausedMenu *pauseMenu;
 	TileMap *tileMap;
+	Shader core_shader;
 
 	void iniDefferedRender();
 	void initView();
@@ -34,6 +43,7 @@ private:
 	void initPauseMenu();
 	void initTileMap();
 	void initPlayerGui();
+	void initShaders();
 
 
 public:
