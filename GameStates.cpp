@@ -50,8 +50,17 @@ void GameStates::initKeybinds()
 void GameStates::initTextures()
 {
 	
-	this->temp.loadFromFile("Resources/Images/sprite/PLAYER_SHEET.png");
-	this->textures["Player_1"] =&temp;
+	this->temp.loadFromFile("Resources/Images/sprite/PLAYER_SHEET2.png");
+	this->textures["Player_1"] =temp;
+	if (!this->textures["RAT1_SHEET"].loadFromFile("Resources/Images/sprite/rat1_60x64.png"))
+	{
+		throw "ERROR::GAME_STATE::COULD_NOT_LOAD_RAT1_TEXTURE";
+	}
+
+	if (!this->textures["BIRD1_SHEET"].loadFromFile("Resources/Images/sprite/bird1_61x57.png"))
+	{
+		throw "ERROR::GAME_STATE::COULD_NOT_LOAD_BIRD1_TEXTURE";
+	}
 }
 void GameStates::InitFonts()
 {
@@ -63,26 +72,37 @@ void GameStates::InitFonts()
 
 void GameStates::initPauseMenu()//tyczy sie new game
 {
-	this->pauseMenu = new PausedMenu(*this->window, this->font);
-	this->pauseMenu->addButtons("Quit", 250.f, 500.f,100.f,50.f, "Quit");
+	const VideoMode& vm = this->stateData->gfxSettings->resolutions;
+	//sprawdzone pod wzgledem id i dla bledy calculateCharacterSize
+	this->pauseMenu = new PausedMenu(this->stateData->gfxSettings->resolutions, this->font);
+	this->pauseMenu->addButtons("Quit", gui::p2pY(74.f, vm),gui::p2pX(13.f, vm), gui::p2pY(6.f, vm), gui::calucuateCharacterSize(vm),"Quit");
 	/*this->pauseMenu->addButtons("Save", 250.f, 800.f,100.f,50.f, "Save");*/
 }
 
 void GameStates::initTileMap()
 {
-	this->tileMap = new TileMap(this->stateData->gridSize, 100, 100,"Resources/Images/tile/tilesheet1.png" );//sprawdzic, czy ze zmiana dziala bylo 10 10
-	this->tileMap->loadFromFile("text.txt");// zmienic nazwe funkcji na loadFromFile
+	//this->tileMap = new TileMap(this->stateData->gridSize, 100, 100,"Resources/Images/tile/tilesheet1.png" );//sprawdzic, czy ze zmiana dziala bylo 10 10
+	this->tileMap=new TileMap("text.ini");// zmienic nazwe funkcji na loadFromFile
 }
 
 void GameStates::initPlayerGui()
 {
-	this->playerGui = new PlayerGui(this->player);//sprawdzic czy jest w konstruktorze i destruktorze
+	/*Player* player, VideoMode& vm*/
+	this->playerGui = new PlayerGui(this->player,this->stateData->gfxSettings->resolutions);//sprawdzic czy jest w konstruktorze i destruktorze
+}
+
+void GameStates::initShaders()
+{
+	if (!this->core_shader.loadFromFile("vertex_shader.vert", "fragment_shader.frag"))
+	{
+		std::cout << "ERROR::GAMESTATE::COULD NOT LOAD SHADER." << "\n";
+	}
 }
 
 void GameStates::initPlayers()
 {
 	//this->player = new Player(0, 0, this->textures["Player_1"]);
-	this->player = new Player(0, 0, *this->textures["Player_1"]);
+	this->player = new Player(220, 220, this->textures["Player_1"]);
 }
 
 
@@ -95,10 +115,13 @@ GameStates::GameStates(StateData* stateData):State(stateData)
 	this->InitFonts();
 	this->initTextures();
 	this->initPauseMenu();
+	this->initShaders();
 	this->initPlayers();
 	this->initPlayerGui();
-	this->initTileMap();
-	
+	this->initTileMap();	
+
+	this->activeEnemies.push_back(new Enemy(200.f, 100.f, this->textures["RAT1_SHEET"]));
+
 	
 }
 
@@ -108,11 +131,46 @@ GameStates::~GameStates()
 	delete this->player;
 	delete this->playerGui;
 	delete this->tileMap;
+	for (size_t i = 0; i <this->activeEnemies.size(); i++)
+	{
+		delete this->activeEnemies[i];
+	}
 }
 
 void GameStates::updateView(const float& dt)
 {
-	this->view.setCenter(floor(this->player->getPosition().x), floor(this->player->getPosition().y));//powinno ustawic srodek kamery, tam gdzie bedzie nasz player,trzeba ta funkcje uwzglednic we wszytskich update jak jest niezatrzymany, floor zaokraglanie w dol
+	
+	this->view.setSize(Vector2f(static_cast<float>(stateData->gfxSettings->resolutions.width), static_cast<float>(stateData->gfxSettings->resolutions.height)));
+	this->view.setCenter(
+		floor(this->player->getPosition().x + (static_cast<float>(this->mousePostWindow.x) - static_cast<float>(this->stateData->gfxSettings->resolutions.width / 2)) / 10.f),
+		floor(this->player->getPosition().y + (static_cast<float>(this->mousePostWindow.y) - static_cast<float>(this->stateData->gfxSettings->resolutions.height / 2)) / 10.f)
+	);
+	if (this->tileMap->getMaxSizeF().x>=this->view.getSize().x )
+	{
+		if (this->view.getCenter().x - this->view.getSize().x / 2.f < 0.f)
+		{
+			this->view.setCenter(0.f + this->view.getSize().x / 2.f, this->view.getCenter().y);
+		}
+		else if (this->view.getCenter().x - this->view.getSize().x / 2.f > this->tileMap->getMaxSizeF().x)
+		{
+			this->view.setCenter(this->tileMap->getMaxSizeF().x - this->view.getSize().x / 2.f, this->view.getCenter().y);
+		}
+	}
+	if (this->tileMap->getMaxSizeF().y>=this->view.getSize().y )
+	{
+		if (this->view.getCenter().y - this->view.getSize().y / 2.f < 0.f)
+		{
+			this->view.setCenter(this->view.getCenter().x, 0.f + this->view.getSize().y / 2.f);
+		}
+		else if (this->view.getCenter().y + this->view.getSize().x / 2.f > this->tileMap->getMaxSizeF().y)
+		{
+			this->view.setCenter(this->view.getCenter().x, this->tileMap->getMaxSizeF().y - this->view.getSize().y / 2.f);
+		}
+	}
+
+
+	this->mousePosGrid.x =static_cast<int>( this->view.getCenter().x )/ static_cast<int>(this->stateData->gridSize);
+	this->mousePosGrid.y =static_cast<int>( this->view.getCenter().y )/ static_cast<int>(this->stateData->gridSize);
 }
 
 void GameStates::update(const float& dt)
@@ -126,8 +184,13 @@ void GameStates::update(const float& dt)
 		this->updateView(dt);
 		this->updatePlayerInput(dt);
 		this->updateTileMap(dt);//musze sprawdzic kolizje przed ruszeniem postaci, koniecznie o tym pamietaj
-		this->player->update(dt);
+		this->player->update(dt,this->mousePostView);
 		this->playerGui->update(dt);
+		for (auto *i :this->activeEnemies)
+		{
+			i->update(dt, this->mousePostView);
+		}
+		
 	}
 	else
 	{
@@ -139,10 +202,14 @@ void GameStates::update(const float& dt)
 
 }
 
-void GameStates::updateTileMap(const float& dt)
+void GameStates::updateTileMap(const float& dt)//sprawdzic
 {
-	this->tileMap->update();
-	this->tileMap->updateCollision(this->player,dt);
+	this->tileMap->update(this->player,dt);
+	for (auto* i : this->activeEnemies)
+	{
+		this->tileMap->update(i, dt);
+	}
+
 }
 
 
@@ -155,11 +222,16 @@ void GameStates::render(RenderTarget* target)
 	/*cout << "Render map w GS" << endl;*/
 	this->renderTexture.clear();
 	renderTexture.setView(this->view);
-	this->tileMap->render(renderTexture,player->getGridPosition(static_cast<int>(this->stateData->gridSize)));
-	this->player->render(renderTexture);
-	this->tileMap->renderDeferred(this->renderTexture);
+	this->tileMap->render(this->renderTexture,this->viewGridPosition,&this->core_shader,this->player->getCenter(),false);
+	/*this->enemy->render(this->renderTexture, &this->core_shader, this->player->getCenter(), true);*/
+	this->player->render(this->renderTexture, &this->core_shader, this->player->getCenter(), true);
+	this->tileMap->renderDeferred(this->renderTexture, &this->core_shader, this->player->getCenter());
+	for (auto* i : this->activeEnemies)
+	{
+		i->render(this->renderTexture, &this->core_shader, this->player->getCenter(), false);
+	}
 	renderTexture.setView(this->renderTexture.getDefaultView());
-	this->playerGui->render(renderTexture);
+	this->playerGui->render(this->renderTexture);
 	if (this->paused)
 	{
 		/*renderTexture.setView(this->renderTexture.getDefaultView());*/
@@ -232,6 +304,7 @@ void GameStates::updatePauseMenuButtons()
 		this->endState();
 	}
 }
+
 
 
 
