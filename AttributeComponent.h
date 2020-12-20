@@ -35,6 +35,10 @@ public:
 	void updateStats(const bool reset);
 	void updateLevel();
 	void update();//glowna
+
 	void gainExp(const int exp);
+	void loseHp(const int hp);
+	void gainHp(const int hp);
+	void loseExp(const int exp);
 };
 #endif // !ATTRIBUTTECOMPONENT
