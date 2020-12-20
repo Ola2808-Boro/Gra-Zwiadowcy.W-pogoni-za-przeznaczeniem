@@ -32,7 +32,7 @@ void TileMap::clear()//to samo co w destruktorze, po to, zeby tam usunac i po pr
 TileMap::TileMap(float gridSize, int width, int height,string texture_file)//wartosci domyslne
 {
 
-	this->gridSizeI = static_cast<int>(gridSizeF);//rzutowanie na unsigned
+	this->gridSizeI = static_cast<int>(this->gridSizeF);//rzutowanie na unsigned
 	this->gridSizeF = gridSize;
 	this->maxSizeWorldGrid.x = width;
 	this->maxSizeWorldGrid.y = height;
@@ -40,6 +40,7 @@ TileMap::TileMap(float gridSize, int width, int height,string texture_file)//war
 	this->maxSizeWorldF.y = static_cast<float>(height) * gridSize;
 	this->layers = 1;
 	this->textureFile = texture_file;
+
 	this->fromX = 0;
 	this->fromY = 0;
 	this->toY = 0;
@@ -75,13 +76,33 @@ TileMap::TileMap(float gridSize, int width, int height,string texture_file)//war
 	this->collisonBox.setFillColor(Color(255, 0, 0, 50));
 	this->collisonBox.setOutlineColor(Color::Red);
 	this->collisonBox.setOutlineThickness(1.f);
+
+}
+
+TileMap::TileMap(const string file_name)
+{
+	this->fromX = 0;
+	this->toX = 0;
+	this->fromY = 0;
+	this->toY = 0;
+	this->layer = 0;
+
+	this->loadFromFile(file_name);
+
+	this->collisonBox.setSize(sf::Vector2f(this->gridSizeF, this->gridSizeF));
+	this->collisonBox.setFillColor(sf::Color(255, 0, 0, 50));
+	this->collisonBox.setOutlineColor(sf::Color::Red);
+	this->collisonBox.setOutlineThickness(1.f);
 }
 
 TileMap::~TileMap()
 {
 	this->clear();
 }
-
+const bool TileMap::checkType(const int x, const int y, const int z, const int type) const
+{
+	return this->map[x][y][this->layer].back()->getType() == type;
+}
 const int TileMap::getLayerSize(const int x, const int y, const int layer) const
 {
 	if (x >= 0 && x < static_cast<int>(this->map.size()))
@@ -98,17 +119,29 @@ const int TileMap::getLayerSize(const int x, const int y, const int layer) const
 	return -1;
 }
 
+const Vector2f& TileMap::getMaxSizeF() const
+{
+	return this->maxSizeWorldF;
+}
+
+const bool TileMap::tileEmpty(const int x, const int y, const int z) const
+{
+	if (x>=0 &&  x<this->maxSizeWorldGrid.x && y >= 0 && y < this->maxSizeWorldGrid.y && z >= 0 && z < this->layers)
+	{
+		return this->map[x][y][z].empty();
+	}
+	throw("Error w TileEmpty");
+}
+
 const Texture* TileMap::getTileTextureSheet() const
 {
 	return &this->tileTextureSheet;
 }
 
-void TileMap::update()
-{
-}
 
-void TileMap::render(RenderTarget& target, const Vector2i& gridPosition)
+void TileMap::render(RenderTarget& target, const Vector2i& gridPosition, Shader* shader, const Vector2f playerPosition, const bool show_collision)
 {
+
 	this->layer = 0;
 
 		this->fromX =gridPosition.x - 5;
@@ -164,19 +197,29 @@ void TileMap::render(RenderTarget& target, const Vector2i& gridPosition)
 			{
 				for (size_t k = 0; k < map[x][y][this->layer].size(); k++)
 				{
-					if (this->map[x][y][this->layer][k]->getType()==TileTaps::DOODAD)
+					if (this->map[x][y][this->layer][k]->getType()==TileTypes::DOODAD)
 					{
 						this->deferedrenderStack.push(this->map[x][y][this->layer][k]);
 					}
 					else
 					{
-						this->map[x][y][this->layer][k]->render(target);
+						if (shader)
+						{
+							this->map[x][y][this->layer][k]->render(target,shader,playerPosition);
+						}
+						else
+						{
+							this->map[x][y][this->layer][k]->render(target);
+						}
 					}
-					if (this->map[x][y][this->layer][k]->getCollision())
+					if (show_collision)
 					{
-						this->collisonBox.setPosition(this->map[x][y][this->layer][k]->getPosition());
-						target.draw(collisonBox);
+						if (this->map[x][y][this->layer][k]->getCollision())
+						{
+							this->collisonBox.setPosition(this->map[x][y][this->layer][k]->getPosition());
+							target.draw(collisonBox);
 
+						}
 					}
 				}
 				
@@ -211,12 +254,22 @@ void TileMap::render(RenderTarget& target, const Vector2i& gridPosition)
 	
 }
 
-void TileMap::renderDeferred(RenderTarget& target)
+void TileMap::renderDeferred(RenderTarget& target, Shader* shader, const Vector2f playerPosition)
 {
 	while (!this->deferedrenderStack.empty())
 	{
-		deferedrenderStack.top()->render(target);
-		deferedrenderStack.pop();
+		
+		if (shader)
+		{
+			deferedrenderStack.top()->render(target, shader, playerPosition);
+		}
+		else
+		{
+			deferedrenderStack.top()->render(target);
+		}
+
+			deferedrenderStack.pop();
+		
 	}
 }
 
@@ -229,23 +282,48 @@ void TileMap::addTile(const int x, const int y, const int z,const IntRect& textu
 		/* OK To add tile. */
 		this->map[x][y][z].push_back(new Tile( x, y, this->gridSizeF, this->tileTextureSheet, texture_rect, collision,type));
 
-		cout << "DEGBUG: ADDED TILE!" << "\n";	
+		cout << "Dodaje!" << "\n";	
 	}
 }
 
 void TileMap::removeTile(const int x, const int y, const int z)
 {
-	if (x < this->maxSizeWorldGrid.x && x >= 0 && y < this->maxSizeWorldGrid.y && y >= 0 && z < this->layers && z >= 0)//sprawdzi czy spelnia warunki
+	if ((x < this->maxSizeWorldGrid.x) && (x >= 0 )&& (y < this->maxSizeWorldGrid.y) && (y >= 0 )&& (z < this->layers && z >= 0))//sprawdzi czy spelnia warunki
 	{
 		if (!this->map[x][y][z].empty())//odwrotnie jak do dodawania
 		{
-			
-			delete this->map[x][y][z][this->map[x][y][z].size()-1];
+
+			delete this->map[x][y][z][this->map[x][y][z].size() - 1];
 			this->map[x][y][z].pop_back();
 			cout << "Remove file" << endl;
 		}
 	}
+	/*if (x < this->maxSizeWorldGrid.x && x >= 0 &&
+		y < this->maxSizeWorldGrid.y && y >= 0 &&
+		z < this->layers && z >= 0)
+	{*/
+		//	if (!this->map[x][y][z].empty())
+		//	{
+		//		/* OK To remove tile. */
+		//		if (type >= 0)
+		//		{
+		//			if (this->map[x][y][z].back()->getType() == type)
+		//			{
+		//				delete this->map[x][y][z][this->map[x][y][z].size() - 1];
+		//				this->map[x][y][z].pop_back();
+		//				//std::cout << "DEGBUG: REMOVED TILE!" << "\n";
+		//			}
+		//		}
+		//		else
+		//		{
+		//			delete this->map[x][y][z][this->map[x][y][z].size() - 1];
+		//			this->map[x][y][z].pop_back();
+		//			//std::cout << "DEGBUG: REMOVED TILE!" << "\n";
+		//		}
+		//	}
+		//}
 }
+
 
 void TileMap::saveToFile(const std::string file_name)
 {
@@ -285,7 +363,7 @@ void TileMap::saveToFile(const std::string file_name)
 					{
 						for (size_t k = 0; k < this->map[x][y][z].size(); k++)
 						{
-							out_file << x << " " << y << " " << z << " " <<
+							out_file <<" "<< x << " " << y << " " << z << " " <<
 								this->map[x][y][z][k]->getAsString()
 								<< " ";
 						}
@@ -321,15 +399,21 @@ void TileMap::loadFromFile(const string file_name)
 		bool collision = false;
 		short type = 0;
 
-		in_file >> size.x >> size.y >> gridSizeI >> layers>>texture_file;
+		in_file >> size.x >> size.y >> gridSize >> layers >> texture_file;
 
+		this->gridSizeI = gridSize;
+		this->maxSizeWorldF.x = static_cast<float>(size.x * gridSize);
+		this->maxSizeWorldF.y = static_cast<float>(size.y * gridSize);
 		this->gridSizeI = gridSize;
 		this->gridSizeF = static_cast<float>(gridSize);
 		this->maxSizeWorldGrid.x = size.x;
 		this->maxSizeWorldGrid.y = size.y;
 		this->layers = layers;
 		this->textureFile = texture_file;
+
+
 		this->clear();
+
 		this->map.resize(maxSizeWorldGrid.x, vector<vector<vector<Tile*>>>());
 		for (int x = 0; x < this->maxSizeWorldGrid.x; x++)
 		{
@@ -350,7 +434,7 @@ void TileMap::loadFromFile(const string file_name)
 		}
 		while (in_file >> x >> y >> z >> trX >> trY >>collision >> type)
 		{
-			this->map[x][y][z].push_back(new Tile(x,y,gridSizeF,this->tileTextureSheet, IntRect(trX,trY,gridSizeI,gridSizeI),collision,type));
+			this->map[x][y][z].push_back(new Tile(x,y,this->gridSizeF,this->tileTextureSheet, IntRect(trX,trY,this->gridSizeI,this->gridSizeI),collision,type));
 		}
 	}
 	else
@@ -361,7 +445,7 @@ void TileMap::loadFromFile(const string file_name)
 	in_file.close();//zamykam sobie
 }
 
-void TileMap::updateCollision(Entity* entity, const float& dt)
+void TileMap::update(Entity* entity, const float& dt)
 {
 	if (entity->getPosition().x<0.f)
 	{
@@ -458,6 +542,7 @@ void TileMap::updateCollision(Entity* entity, const float& dt)
 		{
 			for (size_t k = 0; k < map[x][y][this->layer].size(); k++)
 			{
+				this->map[x][y][this->layer][k]->update();
 				FloatRect playerBounds = entity->getGlobalBounds();//f sa w Tile
 				FloatRect nextPositionsBounds = entity->getNextPositionBounds(dt);//f jest w entity
 				FloatRect wallBounds = map[x][y][this->layer][k]->getGlobalBounds();
@@ -515,3 +600,4 @@ void TileMap::updateCollision(Entity* entity, const float& dt)
 	}
 
 }
+
