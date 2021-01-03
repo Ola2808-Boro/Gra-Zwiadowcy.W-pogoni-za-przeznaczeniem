@@ -2,10 +2,32 @@
 #include "Game.h"
 
 
+//---------------------------------------------Konstruktor-------------------------------------------------------//
+Game::Game()//od razu 
+{
+	this->initVariables();
+	this->initGraphicsSettings();
+	this->initWindow();
+	this->initKeys();
+	this->initStateData();
+	this->initStates();
+}
+//---------------------------------------------Destruktor-------------------------------------------------------//
+Game::~Game()
+{
+	delete this->window;
+	while (!this->states.empty())
+	{
+		delete this->states.top();//zwraca wartość szczytowego elementu na stosie.
+		this->states.pop();//zdjęcie istniejącego elementu ze szczytu stosu;
+
+	}
+}
+//---------------------------------------------Funkcje-------------------------------------------------------//
 void Game::initVariables()//nadaje zmiennym w private wartosci
 {
 	this->window = NULL;
-	this->gridSize = 100.f;
+	this->gridSize = 64.f;
 	this->dt = 0.f;
 }
 
@@ -21,10 +43,8 @@ void Game::initWindow()//inicjuje okno, pobiera dane z pliku
 	{
 		this->window = new RenderWindow(VideoMode(gfxSettings.resolutions.width, gfxSettings.resolutions.height), gfxSettings.title, Style::Titlebar|Style::Close, gfxSettings.contextSettings);
 	}
-	//this->window->setFramerateLimit(gSettingsframeRateLimit);
-	//this->window->setVerticalSyncEnabled(gSettings.verticalSync);
-	this->window->setVerticalSyncEnabled(gfxSettings.verticalSync1);
-	//this->window = new RenderWindow(VideoMode(800, 600), "gSettings.title");
+	this->window->setFramerateLimit(this->gfxSettings.frameRateLimit);
+	this->window->setVerticalSyncEnabled(this->gfxSettings.verticalSync);
 }
 void Game::initKeys()
 {
@@ -53,9 +73,7 @@ void Game::initKeys()
 }
 void Game::initGraphicsSettings()
 {
-	gfxSettings.loadToFile("Config/graphics.ini");
-
-	
+	gfxSettings.loadToFile("Config/graphics.ini");	
 }
 void Game::initStates()//doda ma poczatek
 {
@@ -72,38 +90,12 @@ void Game::initStateData()
 	this->stateData.gridSize = this->gridSize;
 }
 
-
-
-Game::Game()//od razu 
-{
-	this->initVariables();
-	this->initGraphicsSettings();
-	this->initWindow();
-	this->initKeys();
-	this->initStateData();
-	this->initStates();
-}
-
-Game::~Game()
-{
-	delete this->window;
-	while (!this->states.empty())
-	{
-		delete this->states.top();//zwraca wartość szczytowego elementu na stosie.
-		 this->states.pop();//zdjęcie istniejącego elementu ze szczytu stosu;
-
-	}
-}
-
 void Game::updateSFMLEvent()
 {
 	while (this->window->pollEvent(sfEvent))
 	{
-		/*if ((sfEvent.type == Event::Closed)||(Keyboard::isKeyPressed(Keyboard::Escape)))
-		{
+		if (this->sfEvent.type == Event::Closed)
 			this->window->close();
-		}*/
-		//moj blad, przez to mi pauseMenu nie dzialalo
 		
 	}
 }
@@ -120,7 +112,7 @@ void Game::update()
 
 			if (this->states.top()->getQuit())
 			{
-				cout << "Jestem2" << endl;
+			
 				this->states.top()->endState();
 				delete this->states.top();
 				this->states.pop();
@@ -131,7 +123,7 @@ void Game::update()
 	else
 	{
 		this->endApplication();
-		cout << "Jestem" << endl;
+		/*cout << "Jestem" << endl;*/
 		this->window->close();
 	}
 }
@@ -139,8 +131,17 @@ void Game::update()
 
 void Game::run()
 {
+	Music music;
+	if (!music.openFromFile("proba1music.wav"));
+	{
+		cout << "Blad w muzyce" << endl;
+	}
+	music.setVolume(50);
+	music.setLoop(true);
+	music.play();
 	while (this->window->isOpen())
 	{
+		
 		this->updateDT();
 		
 		this->update();
@@ -171,5 +172,4 @@ void Game::updateDT()
 	this->dt = this->dtClock.restart().asSeconds();
 	//system("cls");
 	//cout << this->dt << "\n";
-}
 }
