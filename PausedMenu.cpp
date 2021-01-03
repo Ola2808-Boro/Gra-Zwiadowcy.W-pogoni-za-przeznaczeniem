@@ -1,13 +1,14 @@
 #include"stdafx.h"
 #include "PausedMenu.h"
 
+//----------------------------------------------Konstruktor--------------------------------------------------//
 PausedMenu::PausedMenu(VideoMode& vm, Font& font):font(font)
 {
 	
 	this->background.setSize(Vector2f(static_cast<float>(vm.width), static_cast<float>(vm.height)));
 	background.setFillColor(Color(20, 20, 20, 100));
 	//conatinerem ustawiam wymiary tego okna
-	this->container.setSize(Vector2f(static_cast<float>((vm.width)/2.f), static_cast<float>(vm.height)-gui::p2pY(9.3f,vm)));
+	this->container.setSize(Vector2f(static_cast<float>((vm.width)/2.f), static_cast<float>(vm.height)/*-gui::p2pY(9.3f,vm)*/));
 	container.setFillColor(Color(20, 20, 20));
 	container.setPosition(static_cast<float>(vm.width /2.f-this->container.getSize().x/2.f),0.f);
 
@@ -18,7 +19,7 @@ PausedMenu::PausedMenu(VideoMode& vm, Font& font):font(font)
 	this->menuText.setPosition(Vector2f((container.getPosition().x+this->container.getSize().x/2.f-this->menuText.getGlobalBounds().width/2.f), (container.getPosition().y+gui::p2pY(4.f,vm))));
 
 }
-
+//--------------------------------------------------------Destruktor------------------------------------------//
 PausedMenu::~PausedMenu()//usuwa wszytsko z kontenera
 {
 	auto it = this->buttons.begin();

@@ -1,603 +1,214 @@
 #include"stdafx.h"
 #include "TileMap.h"
 
-void TileMap::clear()//to samo co w destruktorze, po to, zeby tam usunac i po prostu wywyolac ta funkcje
+//-------------------------------------------Konstruktor----------------------------------------//
+TileMap::TileMap()
 {
-	if (!this->map.empty())
-	{
-		for (int x = 0; x < this->maxSizeWorldGrid.x; x++)
-		{
-			for (int y = 0; y < this->maxSizeWorldGrid.y; y++)
-			{
-				for (int z = 0; z < this->layers; z++)
-				{
-					for (size_t k = 0; k < this->map[x][y][z].size(); k++)
-					{
-						delete this->map[x][y][z][k];
-						this->map[x][y][z][k] = NULL;
-					}
-
-					this->map[x][y][z].clear();
-				}
-				this->map[x][y].clear();
-			}
-			this->map[x].clear();
-		}
-	this->map.clear();
-}
-	/*cout << this->map.size() << endl;*/
-
-}
-
-TileMap::TileMap(float gridSize, int width, int height,string texture_file)//wartosci domyslne
-{
-
-	this->gridSizeI = static_cast<int>(this->gridSizeF);//rzutowanie na unsigned
-	this->gridSizeF = gridSize;
-	this->maxSizeWorldGrid.x = width;
-	this->maxSizeWorldGrid.y = height;
-	this->maxSizeWorldF.x = static_cast<float>(width) * gridSize;
-	this->maxSizeWorldF.y = static_cast<float>(height) * gridSize;
-	this->layers = 1;
-	this->textureFile = texture_file;
-
-	this->fromX = 0;
-	this->fromY = 0;
-	this->toY = 0;
-	this->toX = 0;
-	this->layer=0;
-
-	
-	this->map.resize(this->maxSizeWorldGrid.x, vector<vector<vector<Tile*>>>());
-	for (int x = 0; x < this->maxSizeWorldGrid.x; x++)
-	{
-		cout << "1" << endl;
-		
-		
-		for (int y = 0; y < this->maxSizeWorldGrid.y; y++)
-		{
-			cout << "2" << endl;
-			this->map[x].resize(maxSizeWorldGrid.y, vector<vector<Tile*>>());
-			
-
-			for (int z = 0; z < this->layers; z++)
-			{
-				cout << "3" << endl;
-				this->map[x][y].resize(layers,vector<Tile*>());//pusty 
-				/*this->map[x][y].push_back(nullptr);*/
-			}
-		}
-	}
-	if(!this->tileTextureSheet.loadFromFile(texture_file));
-	{
-		cout << "Error w konstruktorze" << endl;
-	}
-	this->collisonBox.setSize(Vector2f(gridSize, gridSize));
-	this->collisonBox.setFillColor(Color(255, 0, 0, 50));
-	this->collisonBox.setOutlineColor(Color::Red);
-	this->collisonBox.setOutlineThickness(1.f);
-
-}
-
-TileMap::TileMap(const string file_name)
-{
-	this->fromX = 0;
-	this->toX = 0;
-	this->fromY = 0;
-	this->toY = 0;
-	this->layer = 0;
-
-	this->loadFromFile(file_name);
-
-	this->collisonBox.setSize(sf::Vector2f(this->gridSizeF, this->gridSizeF));
-	this->collisonBox.setFillColor(sf::Color(255, 0, 0, 50));
-	this->collisonBox.setOutlineColor(sf::Color::Red);
-	this->collisonBox.setOutlineThickness(1.f);
+    this->gridSizeI = 100;
+  
+    this->collisionBox.setSize(sf::Vector2f(gridSizeI, gridSizeI));
+    this->collisionBox.setFillColor(sf::Color(255, 0, 0, 50));
+    this->collisionBox.setOutlineColor(sf::Color::Red);
+    this->collisionBox.setOutlineThickness(1.f);
 }
 
 TileMap::~TileMap()
 {
-	this->clear();
+
 }
-const bool TileMap::checkType(const int x, const int y, const int z, const int type) const
+//-----------------------------------------Funkcje--------------------------------------------------------//
+bool TileMap::load(const string& tileset, sf::Vector2u tileSize, const int* tiles, unsigned int width, unsigned int height)
 {
-	return this->map[x][y][this->layer].back()->getType() == type;
+    {
+        // load the tileset texture
+        if (!m_tileset.loadFromFile("Woodland_Tileset.png"))
+            return false;
+
+        // resize the vertex array to fit the level size
+        m_vertices.setPrimitiveType(sf::Quads);
+        m_vertices.resize(width * height * 4);
+
+        // populate the vertex array, with one quad per tile
+        for (unsigned int i = 0; i < width; ++i)
+            for (unsigned int j = 0; j < height; ++j)
+            {
+                // get the current tile number
+                int tileNumber = tiles[i + j * width];
+
+                // find its position in the tileset texture
+                int tu = tileNumber % (m_tileset.getSize().x / tileSize.x);
+                int tv = tileNumber / (m_tileset.getSize().x / tileSize.x);
+
+                // get a pointer to the current tile's quad
+                sf::Vertex* quad = &m_vertices[(i + j * width) * 4];
+
+                // define its 4 corners
+                quad[0].position = sf::Vector2f(i * tileSize.x, j * tileSize.y);
+                quad[1].position = sf::Vector2f((i + 1) * tileSize.x, j * tileSize.y);
+                quad[2].position = sf::Vector2f((i + 1) * tileSize.x, (j + 1) * tileSize.y);
+                quad[3].position = sf::Vector2f(i * tileSize.x, (j + 1) * tileSize.y);
+
+                // define its 4 texture coordinates
+                quad[0].texCoords = sf::Vector2f(tu * tileSize.x, tv * tileSize.y);
+                quad[1].texCoords = sf::Vector2f((tu + 1) * tileSize.x, tv * tileSize.y);
+                quad[2].texCoords = sf::Vector2f((tu + 1) * tileSize.x, (tv + 1) * tileSize.y);
+                quad[3].texCoords = sf::Vector2f(tu * tileSize.x, (tv + 1) * tileSize.y);
+
+               
+            }
+      
+        return true;
+
+
+
+
+    }
 }
-const int TileMap::getLayerSize(const int x, const int y, const int layer) const
+
+void TileMap::render(RenderTarget& target)
 {
-	if (x >= 0 && x < static_cast<int>(this->map.size()))
-	{
-		if (y >= 0 && y < static_cast<int>(this->map[x].size()))
-		{
-			if (layer >= 0 && layer < static_cast<int>(this->map[x][y].size()))
-			{
-				return this->map[x][y][layer].size();
-			}
-		}
-	}
+    const int level[] =
+    {
+       0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+       0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+       0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+       0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+       0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+       0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+       0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+       0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+       0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+       0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+       0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+       0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+       0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+       0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+       0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+       0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+       0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+       0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+       0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+       0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+       0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+       0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+       0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+       0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+       0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+       0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+       0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+       0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+       0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+       0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+       0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+       0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+       0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+       0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+       0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+       0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+       0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+       0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 
-	return -1;
+    };     //1  2  3  4  5 6  7  8 
+
+
+    const int river[] =
+    {
+       3,4,5,0,3,4,5,56,57,58,59,3,4,5,0,0,0,3,4,5,56,57,0,0,3,4,5,3,4,5,56,57,56,57,58,59,3,4,5,66,67,67,67,68,3,4,5,58,59,58,59,3,4,5,0,0,3,4,5,3,4,5,3,4,5,3,4,5,
+       19,20,21,0,19,20,21,72,73,74,75,19,20,21,13,0,0,19,20,21,72,73,58,59,19,20,21,19,20,21,72,73,72,73,74,75,19,20,21,82,83,83,83,84,19,20,21,74,75,74,75,19,20,21,0,0,19,20,21,19,20,21,19,20,21,19,20,21,
+       0,36,0,0,0,36,0,88,89,90,91,0,36,0,0,116,114,0,36,0,88,89,74,75,0,36,0,13,36,0,88,89,88,89,90,91,0,36,0,98,99,99,99,100,0,36,0,90,91,90,91,0,36,0,132,132,0,36,0,0,36,0,0,36,0,0,36,0,
+       13,52,13,13,13,52,13,28,31,13,15,30,52,40,41,129,130,0,52,0,31,31,90,91,0,52,0,0,52,13,116,13,0,0,13,13,13,52,116,132,132,132,132,132,0,52,0,28,12,31,31,132,52,132,132,132,0,52,0,28,28,29,30,30,31,31,31,31,
+       10,11,10,11,10,11,10,11,10,11,10,11,10,11,10,11,10,117, 0,  112,113,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10,11,10,11,10,11,10,11,10,11,10,11,10,11,10,11,10,11,10,11,10,11,10,11,0,0,0,0,0,0,0,
+       26,27,26,27,26,27,26,27,26,27,26,27,26,27,26,27,26,132,131,128,129,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,26,27,26,27,26,27,26,27,26,27,26,27,26,27,26,27,26,27,26,27,26,27,26,27,0,0,0,0,0,0,0,
+       28,28,28,28,28,28,28,28,13,13,13,0,0,0,0,0,0,0,0,0,0,0,0,13,13,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,31,31,31,31,31,31,31,31,31,31,31,31,31,31,31,31,31,31,31,31,31,31,31,31,31,
+       0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+       0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+       0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+       0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+       0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+       0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+       0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+       0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+       0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+       0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+       0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+       0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+       0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+       0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,13,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,28,0,0,0,0,0,0,0,13,0,0,0,0,0,0,0,0,0,
+       0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+       0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+       0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+       0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,28,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,28,0,0,0,0,0,0,0,40,41,0,0,0,0,0,0,0,0,28,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+       0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+       0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+       0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+       131,131,131,131,131,131,131,131,131,131,131,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+       70,70,70,70,70,70,70,70,70,70,70,70,70,70,71,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,13,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,13,0,0,0,0,0,0,0,0,0,0,0,0,0,
+       86,86,86,86,86,86,86,86,86,86,86,86,86,86,86,122,126,126,126,126,126,126,127,0,0,0,0,0,0,3, 4, 5, 0,0, 3, 4, 5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+       86,86,86,86,86,86,86,86,86,86,86,86,86,86,86,86, 86, 86, 86, 86, 86, 86, 86,127,0,  0, 0,  0, 0,19,20,21,0,0,19,20, 21,0,28,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+       86,86,86,86,86,86,86,86,86,86,86,86,86,86,86,86, 86, 86, 86, 86, 86, 86, 86,86,127, 0, 0,  0, 0, 0,36,0, 0,0,0, 36,0,0,0,0,112,113,10,11,10,11,10,11,10,11,10,11,10,11,10,11,3,4,5,3,4,5,0,0,0,0,0,0,
+       86,86,86,86,86,86,86,86,86,86,86,86,86,86,86,86, 86, 86, 86, 86, 86, 86, 86,86, 86,127,131,0, 0, 0,52,28, 0,28,0, 52,0,0,0,0,128,129,26,27,26,27,26,27,26,27,26,27,26,27,26,27,19,20,21,19,20,21,0,0,0,0,0,0,
+       0,0,86,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+       0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+       0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+       0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+
+
+    };     //1  2  3  4  5 6  7  8 
+    
+    // create the tilemap from the level definition
+    TileMap map;
+    TileMap map1;
+
+
+
+
+    if (!map.load("Woodland_Tileset.png", sf::Vector2u(32, 32), level, 68, 38))
+    {
+        cout << "Error" << endl;
+    }
+    if (!map1.load("Woodland_Tileset.png", sf::Vector2u(32, 32), river, 68, 38))
+    {
+        cout << "Error" << endl;
+    }
+    
+
+   
+        target.draw(map);
+        target.draw(map1);
+        
+       
+       
+    
 }
-
-const Vector2f& TileMap::getMaxSizeF() const
+void TileMap::draw(sf::RenderTarget& target, sf::RenderStates states) const
 {
-	return this->maxSizeWorldF;
-}
+  
+    // apply the transform
+   states.transform *= getTransform();
 
-const bool TileMap::tileEmpty(const int x, const int y, const int z) const
+    // apply the tileset texture
+   states.texture = &m_tileset;
+
+
+   // draw the vertex array
+   target.draw(m_vertices, states);
+
+
+
+}
+void TileMap::updateTileCollision(Entity* entity, const float& dt)
 {
-	if (x>=0 &&  x<this->maxSizeWorldGrid.x && y >= 0 && y < this->maxSizeWorldGrid.y && z >= 0 && z < this->layers)
-	{
-		return this->map[x][y][z].empty();
-	}
-	throw("Error w TileEmpty");
+    
 }
-
-const Texture* TileMap::getTileTextureSheet() const
+const Vector2i& TileMap::getMaxSizeGrid() const
 {
-	return &this->tileTextureSheet;
+    return this->maxSizeWorldGrid;
 }
 
-
-void TileMap::render(RenderTarget& target, const Vector2i& gridPosition, Shader* shader, const Vector2f playerPosition, const bool show_collision)
+const sf::Vector2f& TileMap::getMaxSize() const
 {
-
-	this->layer = 0;
-
-		this->fromX =gridPosition.x - 5;
-		if (this->fromX < 0)
-		{
-			fromX = 0;
-		}
-		else if (this->fromX > this->maxSizeWorldGrid.x)
-		{
-			this->fromX = this->maxSizeWorldGrid.x;
-		}
-
-
-
-		this->toX = gridPosition.x + 8;
-		if (this->toX < 0)
-		{
-			toX = 0;
-		}
-		else if (this->toX > this->maxSizeWorldGrid.x)
-		{
-			this->toX = this->maxSizeWorldGrid.x;
-		}
-
-
-
-		this->fromY = gridPosition.y - 5;
-		if (this->fromY < 0)
-		{
-			fromY = 0;
-		}
-		else if (this->fromY > this->maxSizeWorldGrid.y)
-		{
-			this->fromY = this->maxSizeWorldGrid.y;
-		}
-
-
-
-		this->toY = gridPosition.y + 8;
-		if (this->toY < 0)
-		{
-			toY = 0;
-		}
-		else if (this->toY > this->maxSizeWorldGrid.y)
-		{
-			this->toY = this->maxSizeWorldGrid.y;
-		}
-
-
-		for (int x = this->fromX; x < this->toX; x++)
-		{
-			for (int y = this->fromY; y < this->toY; y++)
-			{
-				for (size_t k = 0; k < map[x][y][this->layer].size(); k++)
-				{
-					if (this->map[x][y][this->layer][k]->getType()==TileTypes::DOODAD)
-					{
-						this->deferedrenderStack.push(this->map[x][y][this->layer][k]);
-					}
-					else
-					{
-						if (shader)
-						{
-							this->map[x][y][this->layer][k]->render(target,shader,playerPosition);
-						}
-						else
-						{
-							this->map[x][y][this->layer][k]->render(target);
-						}
-					}
-					if (show_collision)
-					{
-						if (this->map[x][y][this->layer][k]->getCollision())
-						{
-							this->collisonBox.setPosition(this->map[x][y][this->layer][k]->getPosition());
-							target.draw(collisonBox);
-
-						}
-					}
-				}
-				
-			}
-
-		}
-	
-		for (auto& x : this->map)
-		{
-			for (auto& y : x)
-			{
-				for (auto &z : y)
-				{
-					for (auto* k : z)
-					{
-						k->render(target);
-						if (k->getCollision())
-						{
-							this->collisonBox.setPosition(k->getPosition());
-							target.draw(this->collisonBox);
-						}
-						}
-				
-
-				}
-			}
-		}
-
-
-	
-
-	
-}
-
-void TileMap::renderDeferred(RenderTarget& target, Shader* shader, const Vector2f playerPosition)
-{
-	while (!this->deferedrenderStack.empty())
-	{
-		
-		if (shader)
-		{
-			deferedrenderStack.top()->render(target, shader, playerPosition);
-		}
-		else
-		{
-			deferedrenderStack.top()->render(target);
-		}
-
-			deferedrenderStack.pop();
-		
-	}
-}
-
-void TileMap::addTile(const int x, const int y, const int z,const IntRect& texture_rect, const bool& collision, const short& type)
-{
-	if (x < this->maxSizeWorldGrid.x && x >= 0 &&
-		y < this->maxSizeWorldGrid.y && y >= 0 &&
-		z < this->layers && z >= 0)
-	{
-		/* OK To add tile. */
-		this->map[x][y][z].push_back(new Tile( x, y, this->gridSizeF, this->tileTextureSheet, texture_rect, collision,type));
-
-		cout << "Dodaje!" << "\n";	
-	}
-}
-
-void TileMap::removeTile(const int x, const int y, const int z)
-{
-	if ((x < this->maxSizeWorldGrid.x) && (x >= 0 )&& (y < this->maxSizeWorldGrid.y) && (y >= 0 )&& (z < this->layers && z >= 0))//sprawdzi czy spelnia warunki
-	{
-		if (!this->map[x][y][z].empty())//odwrotnie jak do dodawania
-		{
-
-			delete this->map[x][y][z][this->map[x][y][z].size() - 1];
-			this->map[x][y][z].pop_back();
-			cout << "Remove file" << endl;
-		}
-	}
-	/*if (x < this->maxSizeWorldGrid.x && x >= 0 &&
-		y < this->maxSizeWorldGrid.y && y >= 0 &&
-		z < this->layers && z >= 0)
-	{*/
-		//	if (!this->map[x][y][z].empty())
-		//	{
-		//		/* OK To remove tile. */
-		//		if (type >= 0)
-		//		{
-		//			if (this->map[x][y][z].back()->getType() == type)
-		//			{
-		//				delete this->map[x][y][z][this->map[x][y][z].size() - 1];
-		//				this->map[x][y][z].pop_back();
-		//				//std::cout << "DEGBUG: REMOVED TILE!" << "\n";
-		//			}
-		//		}
-		//		else
-		//		{
-		//			delete this->map[x][y][z][this->map[x][y][z].size() - 1];
-		//			this->map[x][y][z].pop_back();
-		//			//std::cout << "DEGBUG: REMOVED TILE!" << "\n";
-		//		}
-		//	}
-		//}
+    return this->maxSizeWorldF;
 }
 
 
-void TileMap::saveToFile(const std::string file_name)
-{
-	/*Saves the entire tilemap to a text-file.
-	Format:
-	Basic:
-	Size x y
-	gridSize
-	layers
-	texture file
-	All tiles:
-	type
-	gridPos x y layer
-	Texture rect x y
-	collision
-	tile_specific...
-	*/
-
-	std::ofstream out_file;
-
-	out_file.open(file_name);
-
-	if (out_file.is_open())
-	{
-		out_file << this->maxSizeWorldGrid.x << " " << this->maxSizeWorldGrid.y << "\n"
-			<< this->gridSizeI << "\n"
-			<< this->layers << "\n"
-			<< this->textureFile << "\n";
-
-		for (int x = 0; x < this->maxSizeWorldGrid.x; x++)
-		{
-			for (int y = 0; y < this->maxSizeWorldGrid.y; y++)
-			{
-				for (int z = 0; z < this->layers; z++)
-				{
-					if (!this->map[x][y][z].empty())
-					{
-						for (size_t k = 0; k < this->map[x][y][z].size(); k++)
-						{
-							out_file <<" "<< x << " " << y << " " << z << " " <<
-								this->map[x][y][z][k]->getAsString()
-								<< " ";
-						}
-					}
-				}
-				}
-			}
-		}
-
-	else
-	{
-		std::cout << "ERROR::TILEMAP::COULD NOT SAVESAVE TO FILE::FILENAME: " << file_name << "\n";
-	}
-
-	out_file.close();
-}
-
-void TileMap::loadFromFile(const string file_name)
-{
-	ifstream in_file;
-	in_file.open(file_name);
-	if (in_file.is_open())//jezeli istnieje
-	{
-		Vector2i size;
-		int gridSize=0;
-		int layers=0;
-		string texture_file="";
-		int x = 0;
-		int y = 0;
-		int z = 0;
-		int trX = 0;
-		int trY = 0;
-		bool collision = false;
-		short type = 0;
-
-		in_file >> size.x >> size.y >> gridSize >> layers >> texture_file;
-
-		this->gridSizeI = gridSize;
-		this->maxSizeWorldF.x = static_cast<float>(size.x * gridSize);
-		this->maxSizeWorldF.y = static_cast<float>(size.y * gridSize);
-		this->gridSizeI = gridSize;
-		this->gridSizeF = static_cast<float>(gridSize);
-		this->maxSizeWorldGrid.x = size.x;
-		this->maxSizeWorldGrid.y = size.y;
-		this->layers = layers;
-		this->textureFile = texture_file;
-
-
-		this->clear();
-
-		this->map.resize(maxSizeWorldGrid.x, vector<vector<vector<Tile*>>>());
-		for (int x = 0; x < this->maxSizeWorldGrid.x; x++)
-		{
-			for (int y = 0; y < this->maxSizeWorldGrid.y; y++)
-			{
-				this->map[x].resize(maxSizeWorldGrid.y, vector<vector<Tile*>>());
-
-				for (int  z = 0; z < this->layers; z++)
-				{
-					this->map[x][y].resize(layers, vector<Tile*>());
-				
-				}
-			}
-		}
-		if (!this->tileTextureSheet.loadFromFile(texture_file));
-		{
-			cout << "Error" << endl;
-		}
-		while (in_file >> x >> y >> z >> trX >> trY >>collision >> type)
-		{
-			this->map[x][y][z].push_back(new Tile(x,y,this->gridSizeF,this->tileTextureSheet, IntRect(trX,trY,this->gridSizeI,this->gridSizeI),collision,type));
-		}
-	}
-	else
-	{
-		cout << "Blad z plikiemw TileMap" << endl;
-	}
-	
-	in_file.close();//zamykam sobie
-}
-
-void TileMap::update(Entity* entity, const float& dt)
-{
-	if (entity->getPosition().x<0.f)
-	{
-		entity->setPosition(0.f, entity->getPosition().y);
-		entity->stopVelocityX();
-	}
-	else if (entity->getPosition().x+ entity->getGlobalBounds().width > this->maxSizeWorldGrid.x)
-	{
-		entity->setPosition(this->maxSizeWorldGrid.x- entity->getGlobalBounds().width, entity->getPosition().y);
-		entity->stopVelocityX();
-	}
-
-	if (entity->getPosition().y < 0.f)
-	{
-		entity->setPosition(entity->getPosition().y,0.f);
-		entity->stopVelocityY();
-	}
-	else if (entity->getPosition().y + entity->getGlobalBounds().height > this->maxSizeWorldGrid.y)
-	{
-		entity->setPosition(entity->getPosition().x, this->maxSizeWorldGrid.y- entity->getGlobalBounds().height);
-		entity->stopVelocityY();
-	}
-
-	//TILES
-	this->layer = 0;
-
-	this->fromX = entity->getGridPosition(this->gridSizeI).x - 1;
-	if (this->fromX < 0)
-		this->fromX = 0;
-	else if (this->fromX > this->maxSizeWorldGrid.x)
-		this->fromX = this->maxSizeWorldGrid.x;
-
-	this->toX = entity->getGridPosition(this->gridSizeI).x + 3;
-	if (this->toX < 0)
-		this->toX = 0;
-	else if (this->toX > this->maxSizeWorldGrid.x)
-		this->toX = this->maxSizeWorldGrid.x;
-
-	this->fromY = entity->getGridPosition(this->gridSizeI).y - 1;
-	if (this->fromY < 0)
-		this->fromY = 0;
-	else if (this->fromY > this->maxSizeWorldGrid.y)
-		this->fromY = this->maxSizeWorldGrid.y;
-
-	this->toY = entity->getGridPosition(this->gridSizeI).y + 3;
-	if (this->toY < 0)
-		this->toY = 0;
-	else if (this->toY > this->maxSizeWorldGrid.y)
-		this->toY = this->maxSizeWorldGrid.y;
-
-
-
-
-	this->toX =entity->getGridPosition(gridSizeI).x+3;
-	if (this->toX < 0)
-	{
-		toX = 0;
-	}
-	else if (this->toX > this->maxSizeWorldGrid.x)
-	{
-		this->toX = this->maxSizeWorldGrid.x ;
-	}
-
-
-
-	this->fromY = entity->getGridPosition(gridSizeI).y - 1;
-	if (this->fromY < 0)
-	{
-		fromY = 0;
-	}
-	else if (this->fromY > this->maxSizeWorldGrid.y)
-	{
-		this->fromY = this->maxSizeWorldGrid.y;
-	}
-
-
-
-	this->toY = entity->getGridPosition(gridSizeI).y + 3;
-	if (this->toY < 0)
-	{
-		toY = 0;
-	}
-	else if (this->toY > this->maxSizeWorldGrid.y)
-	{
-		this->toY = this->maxSizeWorldGrid.y;
-	}
-
-	
-
-
-	for (int x =this->fromX; x < this->toX; x++)
-	{
-		for (int y = this->fromY; y < this->toY; y++)
-		{
-			for (size_t k = 0; k < map[x][y][this->layer].size(); k++)
-			{
-				this->map[x][y][this->layer][k]->update();
-				FloatRect playerBounds = entity->getGlobalBounds();//f sa w Tile
-				FloatRect nextPositionsBounds = entity->getNextPositionBounds(dt);//f jest w entity
-				FloatRect wallBounds = map[x][y][this->layer][k]->getGlobalBounds();
-				if (this->map[x][y][this->layer][k]->getCollision() && this->map[x][y][this->layer][k]->intersects(playerBounds))
-				{
-					//bottom
-					if (playerBounds.top < wallBounds.top
-						&& playerBounds.top + playerBounds.height < wallBounds.top + wallBounds.height
-						&& playerBounds.left < wallBounds.left + wallBounds.width
-						&& playerBounds.left + playerBounds.width > wallBounds.left
-						)
-					{
-						entity->stopVelocityY();
-						entity->setPosition(playerBounds.left, wallBounds.top - playerBounds.height);
-					}
-					//top
-					else if (playerBounds.top > wallBounds.top + wallBounds.height
-						&& playerBounds.top + playerBounds.height > wallBounds.top + wallBounds.height
-						&& playerBounds.left < wallBounds.left + wallBounds.width
-						&& playerBounds.left + playerBounds.width > wallBounds.left
-						)
-					{
-						entity->stopVelocityY();
-						entity->setPosition(playerBounds.left, wallBounds.top + playerBounds.height);
-					}
-					//Right collision
-					if (playerBounds.left < wallBounds.left
-						&& playerBounds.left + playerBounds.width < wallBounds.left + wallBounds.width
-						&& playerBounds.top < wallBounds.top + wallBounds.height
-						&& playerBounds.top + playerBounds.height > wallBounds.top
-						)
-					{
-						entity->stopVelocityX();
-						entity->setPosition(wallBounds.left - playerBounds.width, playerBounds.top);
-					}
-
-					//Left collision
-					else if (playerBounds.left > wallBounds.left
-						&& playerBounds.left + playerBounds.width > wallBounds.left + wallBounds.width
-						&& playerBounds.top < wallBounds.top + wallBounds.height
-						&& playerBounds.top + playerBounds.height > wallBounds.top
-						)
-					{
-						entity->stopVelocityX();
-						entity->setPosition(wallBounds.left + wallBounds.width, playerBounds.top);
-					}
-				}
-			}
-			
-			
-
-			
-		}
-		
-	}
-
-}
 
