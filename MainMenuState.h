@@ -5,6 +5,7 @@
 #include "EditorState.h"
 #include "Gui.h"
 #include "SettingState.h"
+#include "LoadGameState.h"
 
 class MainMenuState:public State //dziedzicze po State ma f wirtualne 
 {
@@ -23,11 +24,12 @@ private:
 public:
 	MainMenuState(StateData* stateData);
 	void update(const float& dt);
-	void render(RenderTarget* target = nullptr);
+	void render(RenderTarget* target = NULL);
 	void updatePlayerInput(const float& dt);
 	virtual ~MainMenuState();
 	void updateButton();
 	void renderButtton(RenderTarget&target);
+	void saveToFileNOT(string path);
 };
 
 #endif 
