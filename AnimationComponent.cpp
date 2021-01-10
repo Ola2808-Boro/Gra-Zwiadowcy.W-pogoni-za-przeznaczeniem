@@ -1,29 +1,38 @@
 #include"stdafx.h"
 #include "AnimationComponent.h"
 
+//-----------------------------KONSTRUKTOR------------------------------------//
 AnimationComponent::AnimationComponent(Sprite &sprite,Texture& texture_sheet):sprite(sprite), textureSheet(texture_sheet),lastAnimation(NULL), priorityanimation(NULL)
 {
-}
 
+}
+//-------------------------------DESTRUKTOR------------------------------//
 AnimationComponent::~AnimationComponent()
 {
-	for (auto &i :this->animation )
-	{
-		delete i.second;
-
-	}
+		for (auto& i : this->animation)
+		{
+			delete i.second;
+		}
+	
+	
 }
+AnimationComponent::Animation::~Animation()
+{
 
-const bool& AnimationComponent::isDone(const string key) 
+}
+//---------------------------FUNKCJE---------------------------------//
+
+const bool& AnimationComponent::isDone(string key) 
 {
 	return this->animation[key]->isDone();
-
 }
 
 const bool& AnimationComponent::play(const string key,const float& dt,const bool priority)
 {
-	if (this->priorityanimation) //jezeli istnieje to
+
+	if (this->priorityanimation) //If there is a priority animation
 	{
+		cout << "jest protirty" << endl;
 		if (this->priorityanimation == this->animation[key])
 		{
 			if (this->lastAnimation != this->animation[key])
@@ -37,7 +46,7 @@ const bool& AnimationComponent::play(const string key,const float& dt,const bool
 				}
 			}
 
-			//jezeli jest done to usun
+			//If the priority animation is done, remove it
 			if (this->animation[key]->play(dt))
 			{
 				this->priorityanimation = NULL;
@@ -65,6 +74,7 @@ const bool& AnimationComponent::play(const string key,const float& dt,const bool
 
 		this->animation[key]->play(dt);
 	}
+
 	return this->animation[key]->isDone();
 	
 }
@@ -113,6 +123,7 @@ const bool& AnimationComponent::play(const string key, const float& dt,const flo
 
 		this->animation[key]->play(dt, abs(modifier / modifier_max));
 	}
+
 	return this->animation[key]->isDone();
 }
 
@@ -121,6 +132,3 @@ void AnimationComponent::addAnimation(const string key,float animation_timer, in
 	this->animation[key] = new Animation(sprite, textureSheet, animation_timer, start_frame_x, start_frame_y, end_frame_x, end_frame_y, width, height);
 }
 
-AnimationComponent::Animation::~Animation()
-{
-}
