@@ -22,7 +22,7 @@ void MainMenuState::initKeybinds()
 
 void MainMenuState::InitFonts()
 {
-	if (!this->font.loadFromFile("Fonts/FjallaOne-Regular.ttf"))
+	if (!this->font.loadFromFile("Fonts/Langar-Regular.ttf"))
 	{
 		throw("Error::Could not load font");
 	}
@@ -35,7 +35,7 @@ void MainMenuState::initGui()
 
 	//Tlo
 	this->background.setSize(Vector2f(static_cast<float>(vm.width), static_cast<float>(vm.height)));
-	if (!this->backgroundtexture.loadFromFile("Resources/Images/background/pobrane.jpg"))
+	if (!this->backgroundtexture.loadFromFile("Resources/Images/background/zwiadowcy2.jpg"))
 	{
 		cout << "Error, wrong in initBackground()" << endl;//jezeli nie uda sie zaladowowac
 	}
@@ -56,11 +56,14 @@ void MainMenuState::initGui()
 
 	//sprawdzone pod wzgledem id i dla bledy calculateCharacterSize
 
-	//(float x, float y, float width, float height, string text_button, Font font_button, Color hoverColor, Color activeColor, Color idleColor);
-	this->buttons["Game_State"] = new gui::Button(gui::p2pX(15.6f, vm), gui::p2pY(30.f, vm),gui::p2pX(13.f, vm), gui::p2pY(6.f, vm), "New Game", this->font, Color::Blue, Color::Cyan, Color::Yellow, Color::Yellow, Color::Red, Color::Black, gui::calucuateCharacterSize(vm), Color::Red, Color::Yellow, Color::White);
-	this->buttons["Exit_State"] = new gui::Button(gui::p2pX(15.6f, vm), gui::p2pY(40.f, vm),gui::p2pX(13.f, vm), gui::p2pY(6.f, vm), "Quit", this->font, Color::Blue, Color::Cyan, Color::Yellow, Color::Yellow, Color::Red, Color::Black, gui::calucuateCharacterSize(vm), Color::Red, Color::Yellow, Color::White);
-	this->buttons["Editor_State"] = new gui::Button(gui::p2pX(15.6f, vm), gui::p2pY(50.f, vm),gui::p2pX(13.f, vm), gui::p2pY(6.f, vm), "Editor", this->font, Color::Blue, Color::Cyan, Color::Yellow, Color::Yellow, Color::Red, Color::Black, gui::calucuateCharacterSize(vm), Color::Red, Color::Yellow, Color::White);
-	this->buttons["Settings_State"] = new gui::Button(gui::p2pX(15.6f, vm), gui::p2pY(65.f, vm),gui::p2pX(13.f, vm), gui::p2pY(6.f, vm), "Settings", this->font, Color::Blue, Color::Cyan, Color::Yellow, Color::Yellow, Color::Red, Color::Black, gui::calucuateCharacterSize(vm), Color::Red, Color::Yellow, Color::White);//sprobowac migania z 0
+	 //float x, float y, float width, float height, string text_button, Font font_button, Color hoverColor, Color activeColor, Color idleColor, Color outlinehoverColor, Color outlineidleColor,
+	//Color outlineactiveColor, unsigned character_size, Color text_idle, Color text_hover, Color text_active, short unsigned id
+	this->buttons["Game_State"] = new gui::Button(gui::p2pX(15.6f, vm), gui::p2pY(35.f, vm),gui::p2pX(13.f, vm), gui::p2pY(6.f, vm), "New Game", this->font, Color(217,146,24,85), Color::Cyan, Color::Yellow, Color(240,101,14,94), Color::Red, Color::Black, gui::calucuateCharacterSize(vm), Color::Red, Color(235,44,19,92), Color::White);
+	this->buttons["Load_Game"] = new gui::Button(gui::p2pX(15.6f, vm), gui::p2pY(45.f, vm),gui::p2pX(13.f, vm), gui::p2pY(6.f, vm), "Load Game", this->font, Color(217,146,24,85), Color::Cyan, Color::Yellow, Color(240,101,14,94), Color::Red, Color::Black, gui::calucuateCharacterSize(vm), Color::Red, Color(235,44,19,92), Color::White);
+	this->buttons["Exit_State"] = new gui::Button(gui::p2pX(15.6f, vm), gui::p2pY(55.f, vm),gui::p2pX(13.f, vm), gui::p2pY(6.f, vm), "Quit", this->font, Color(217, 146, 24, 85), Color::Cyan, Color::Yellow, Color(240, 101, 14, 94), Color::Red, Color::Black, gui::calucuateCharacterSize(vm), Color::Red, Color(235, 44, 19, 92), Color::White);
+	this->buttons["Settings_State"] = new gui::Button(gui::p2pX(15.6f, vm), gui::p2pY(65.f, vm),gui::p2pX(13.f, vm), gui::p2pY(6.f, vm), "Settings", this->font, Color(217, 146, 24, 85), Color::Cyan, Color::Yellow, Color(240, 101, 14, 94), Color::Red, Color::Black, gui::calucuateCharacterSize(vm), Color::Red,  Color(235,44,19,92), Color::White);//sprobowac migania z 0
+	
+
 }
 
 
@@ -106,8 +109,6 @@ MainMenuState::~MainMenuState()
 void MainMenuState::updateButton()
 {
 	
-	system("cls");
-	cout << this->mousePostView.x << " " << this->mousePostView.y << endl;
 	for (auto &it:this->buttons )
 	{
 		it.second->update(mousePostWindow);
@@ -118,18 +119,31 @@ void MainMenuState::updateButton()
 	}
 	if (this->buttons["Settings_State"]->isPressed())
 	{
-
+		
+			this->saveToFileNOT("Config/will.txt");
+		
+			this->saveToFileNOT("Config/alyss.txt");
+		
+			this->saveToFileNOT("Config/horace.txt");
+	
 		this->states->push(new SettingState(this->stateData));
-	}
-	if (this->buttons["Editor_State"]->isPressed())
-	{
-
-		this->states->push(new EditorState(this->stateData));
 	}
 	if (this->buttons["Exit_State"]->isPressed())
 	{
+
+		this->saveToFileNOT("Config/will.txt");
+
+		this->saveToFileNOT("Config/alyss.txt");
+
+		this->saveToFileNOT("Config/horace.txt");
+
 		this->endState();
 	}
+	if (this->buttons["Load_Game"]->isPressed())
+	{
+		this->states->push(new LoadGameState(this->stateData));
+	}
+	
 }
 
 void MainMenuState::renderButtton(RenderTarget& target)
@@ -170,4 +184,16 @@ void MainMenuState::render(RenderTarget* target)
 void MainMenuState::updatePlayerInput(const float& dt)
 {
 	
+}
+void MainMenuState::saveToFileNOT(string path)
+{
+	ofstream ofs(path);
+	if (ofs.is_open())
+	{
+		ofs << 0 << endl;
+
+	}
+	ofs.clear();
+	ofs.seekp(0);//ustaw na poczatek
+	ofs.close();
 }
