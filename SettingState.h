@@ -1,39 +1,62 @@
 #ifndef SETTINGSTATE_H
 #define SETTINGSTATE_H
+
 #include "State.h"
 #include "Gui.h"
-//zmiany ustawinie
+
+
 class SettingState:public State//klasa bazowa
 {
 private:
+	//Will
+	RectangleShape willTreatyShowing;
+	Texture willTreatyShowingTexture;//zeby miec funkcje z tej klasy
+	//tlo
 	RectangleShape background;//tlo
-	Font font;
-	//GraphicsSettings gfxSettings;
 	Texture backgroundtexture;//zeby miec funkcje z tej klasy
-	//Button* gamestate_button;//obiekt klasy zajmujacej sie prostokatem
+	//Alyss
+	RectangleShape alyssShowing;//tlo
+	Texture alyssShowingTexture;
+	//Horace
+	RectangleShape horaceShowing;
+	Texture horaceShowingTexture;
+
+
+	
+		
+	Font font;
 	Text optionsText;
+	Text infoText;
 
 	map <string, gui::Button*> buttons;
-	map <string, gui::DropDownList*> dropDownList;
 	vector <VideoMode> modes;
 
+
+	//5 funkcji
 	void initKeybinds();
 	void InitFonts();
 	void initGui();
-	void initBackground();
+	void resetGui();
 	void initVariables();
-	void initText();
+	void loadTextures();
+
 	
 
 public:
+	//konstruktor
 	SettingState(StateData* stateData);
+	//destruktor
 	virtual~SettingState();
 
+	//funkcje
 	void update(const float& dt);
-	void render(RenderTarget* target = nullptr);
+	void render(RenderTarget* target = NULL);
 	void updatePlayerInput(const float& dt);
 	void updateGui(const float& dt);
 	void renderGui(RenderTarget& target);
+
+	void saveToFile(string path);
+	
 };
 
 #endif // !SETTINGSTATE_H
