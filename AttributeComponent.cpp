@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "AttributeComponent.h"
-
+//-----------------------------KONSTRUKTOR----------------------------------------//
 AttributeComponent::AttributeComponent(int level)
 {
 	this->level = level;;
@@ -17,7 +17,7 @@ AttributeComponent::AttributeComponent(int level)
 	this->updateLevel();
 	this->updateStats(true);
 }
-
+//----------------------------------DESTRUKTOR----------------------------------------//
 AttributeComponent::~AttributeComponent()
 {
 }
@@ -27,7 +27,7 @@ string AttributeComponent::debugPrint() const
 	sss << "Level" << this->level <<" "<<"Exp:"<<" "<<this->exp<<" "<<"ExpNex:"<<" "<<this->expNext<<"AttributePoints"<<" "<<this->attributePoints<< endl;
 	return sss.str();
 }
-//funckje
+//----------------------------FUNKCJE----------------------------------------------//
 void AttributeComponent::updateStats(const bool reset)
 {
 	this->hpMax = this->vitality * 5 + this->vitality + this->strength / 2 + this->intelligence / 5;
@@ -57,8 +57,7 @@ void AttributeComponent::updateLevel()
 
 void AttributeComponent::update()
 {
-	this->updateLevel();
-	
+	this->updateLevel();	
 }
 
 void AttributeComponent::gainExp(const int exp)
@@ -73,6 +72,8 @@ void AttributeComponent::loseHp(const int hp)
 	if (this->hp < 0)
 	{
 		this->hp = 0;
+		
+		
 	}
 }
 
@@ -92,4 +93,14 @@ void AttributeComponent::loseExp(const int exp)
 	{
 		this->exp = 0;
 	}
+}
+
+void AttributeComponent::render(RenderTarget& target)
+{
+	
+}
+
+const bool AttributeComponent::isDead() const
+{
+	return this->hp<=0;
 }
