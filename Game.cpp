@@ -136,7 +136,7 @@ void Game::run()
 	{
 		cout << "Blad w muzyce" << endl;
 	}
-	music.setVolume(50);
+	music.setVolume(50);//pamietaj
 	music.setLoop(true);
 	music.play();
 	while (this->window->isOpen())
