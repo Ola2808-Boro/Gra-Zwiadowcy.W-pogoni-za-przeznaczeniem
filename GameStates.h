@@ -3,14 +3,18 @@
 
 #include "State.h"
 #include "PausedMenu.h"
+#include "GameOverState.h"
+#include "HelpState.h"
 #include "TileMap.h"
 #include "PlayerGui.h"
 #include "Sword.h"
 #include "Bow.h"
-#include "Player2.h"
-#include "Fighter.h"
+#include "Enemy.h"
+#include "AlyssMainwaring.h"
+#include "HoraceAltman.h"
+#include "WillTreaty.h"
 
-#include "AllEnemies.h"
+
 #include "TextTagSystem.h"
 
 
@@ -25,27 +29,34 @@ private:
 
 	
 	Text debugText;
+	
+
 
 	Player *player;
-	Player2* player2;
-	Fighter* fighter;
+	Enemy* enemy;
+	Player* Will;
+	Player* Alyss;
+	Player* Horace;
 	
 	PlayerGui* playerGui;
-	Enemy *enemy;
-	Rat* rat;
 	
-	EnemySystem* enemysystem;
-	EnemySpawner* enemySpawner;
 
-	vector<Enemy*> activeEnemies;
 
 
 	Font font;
 	PausedMenu *pauseMenu;
+	GameOverState* gameOverState;
+	HelpState* helpState;
 	TileMap *tileMap;
 
 	Clock keyTimer;
 	float keyTimeMax;
+
+	int characterAlyss;
+	int characterHorace;
+	int characterWill;
+
+
 
 
 	TextTagSystem* tts;
@@ -60,12 +71,13 @@ private:
 	void initPauseMenu();
 	void initTileMap();
 	void initPlayerGui();
-	void initEnemySystem();
 	void initSystems();
 	void initKeyTime();
 	void initDebugText();
 	void initEnemy();
-	void initSpawn();
+	void initPauseMenuGameOver();
+	void initHelpState();
+	
 
 public:
 	//konstruktor
@@ -83,13 +95,18 @@ public:
 	void updatePauseMenuButtons();
 	void updatePlayer(const float& dt);
 	void updateEmemies(const float& dt);
-	void updateCombat(Player* player, Player2* player2, const float& dt);
+	void updateCombat(Player* player, Enemy* enemy, const float& dt);
 	void updateDebugText(const float dt);
 	void updateWorldBoundsCollision(Entity* entity, const float& dt);
-	void updateDistance(Player* player,Player2* player2,const float& dt);
+	void updateDistance(Player* player, Enemy* enemy,const float& dt);
 	//wszystkie render
 	void render(RenderTarget* target = NULL);
 
+	//zapisywanie gry
+	void saveToFile(string path);
+
+	//
+	void chooseCharacter();
 	//funkcje dostepu
 	const bool getKeyTime();
 
@@ -97,4 +114,3 @@ public:
 	Texture temp;//pomoc do zaladowania struktury
 };
 #endif 
-
