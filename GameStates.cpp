@@ -1,3 +1,7 @@
+#include"stdafx.h"
+#include "GameStates.h"
+
+//----------------------------------------------Konstruktor-------------------------------------------------//
 GameStates::GameStates(StateData* stateData) :State(stateData)
 {
 	//11 funkcji
@@ -7,14 +11,16 @@ GameStates::GameStates(StateData* stateData) :State(stateData)
 	this->InitFonts();
 	this->initTextures();
 	this->initPauseMenu();
+	this->initPauseMenuGameOver();
+	this->initHelpState();
 	this->initKeyTime();
 	this->initDebugText();
 	this->initPlayers();
 	this->initPlayerGui();
-	this->initEnemySystem();
 	this->initEnemy();
 	this->initTileMap();
 	this->initSystems();
+	
 
 
 
@@ -24,15 +30,14 @@ GameStates::GameStates(StateData* stateData) :State(stateData)
 GameStates::~GameStates()
 {
 	delete this->pauseMenu;
+	delete this->gameOverState;
+	delete this->helpState;
 	delete this->player;
+	delete this->enemy;
 	delete this->playerGui;
 	delete this->tileMap;
-	delete this->enemysystem;
 	delete this->tts;
-	for (size_t i = 0; i < this->activeEnemies.size(); i++)
-	{
-		delete this->activeEnemies[i];
-	}
+	
 }
 
 //----------------------------------------------Funkcje---------------------------------/
@@ -85,17 +90,14 @@ void GameStates::initKeybinds()
 
 void GameStates::initTextures()
 {
-	/*if (!this->textures["PLAYER_SHEET"].loadFromFile("Resources/Images/sprite/PLAYER_SHEET2.png"))
-	{
-		throw "ERROR::GAME_STATE::COULD_NOT_LOAD_PLAYER_TEXTURE";
-	}*/
+	
 	this->temp.loadFromFile("Resources/Images/sprite/PLAYER_SHEET2.png");
 	this->textures["Player_1"] =temp;
 	if (!this->textures["RAT1_SHEET"].loadFromFile("Resources/Images/sprite/rat1_60x64.png"))
 	{
 		throw "ERROR::GAME_STATE::COULD_NOT_LOAD_RAT1_TEXTURE";
 	}
-	if (!this->textures["PLAYER2_SHEET"].loadFromFile("Resources/Images/sprite/PLAYER_SHEET.png"))
+	if (!this->textures["PLAYER2_SHEET"].loadFromFile("Resources/Images/sprite/enemy.png"))
 	{
 		throw "ERROR::GAME_STATE::COULD_NOT_LOAD_RAT1_TEXTURE";
 	}
@@ -107,7 +109,19 @@ void GameStates::initTextures()
 	{
 		throw "ERROR::GAME_STATE::COULD_NOT_LOAD_BIRD1_TEXTURE";
 	}
-	if (!this->textures["FIGHTER_SHEET"].loadFromFile("Resources/Images/sprite/wojownikduzy.png"))
+	if (!this->textures["FIGHTER_SHEET"].loadFromFile("Resources/Images/sprite/a.png"))
+	{
+		throw "ERROR::GAME_STATE::COULD_NOT_LOAD_BIRD1_TEXTURE";
+	}
+	if (!this->textures["WILL_SHEET"].loadFromFile("Resources/Images/sprite/will.png"))
+	{
+		throw "ERROR::GAME_STATE::COULD_NOT_LOAD_BIRD1_TEXTURE";
+	}
+	if (!this->textures["ALYSS_SHEET"].loadFromFile("Resources/Images/sprite/alyss.png"))
+	{
+		throw "ERROR::GAME_STATE::COULD_NOT_LOAD_BIRD1_TEXTURE";
+	}
+	if (!this->textures["HORACE_SHEET"].loadFromFile("Resources/Images/sprite/horace.png"))
 	{
 		throw "ERROR::GAME_STATE::COULD_NOT_LOAD_BIRD1_TEXTURE";
 	}
@@ -126,6 +140,7 @@ void GameStates::initPauseMenu()//tyczy sie new game
 	//sprawdzone pod wzgledem id i dla bledy calculateCharacterSize
 	this->pauseMenu = new PausedMenu(this->stateData->gfxSettings->resolutions, this->font);
 	this->pauseMenu->addButtons("Quit", gui::p2pY(74.f, vm),gui::p2pX(13.f, vm), gui::p2pY(6.f, vm), gui::calucuateCharacterSize(vm),"Quit");
+	this->pauseMenu->addButtons("Save", gui::p2pY(60.f, vm),gui::p2pX(13.f, vm), gui::p2pY(6.f, vm), gui::calucuateCharacterSize(vm),"Save");
 	/*this->pauseMenu->addButtons("Save", 250.f, 800.f,100.f,50.f, "Save");*/
 }
 
@@ -141,11 +156,7 @@ void GameStates::initPlayerGui()
 	this->playerGui = new PlayerGui(this->player,this->stateData->gfxSettings->resolutions);//sprawdzic czy jest w konstruktorze i destruktorze
 }
 
-void GameStates::initEnemySystem()
-{
-	
-	this->enemysystem = new EnemySystem(this->activeEnemies, this->textures,*this->player);
-}
+
 
 void GameStates::initSystems()
 {
@@ -168,19 +179,57 @@ void GameStates::initDebugText()
 
 void GameStates::initEnemy()
 {
-	this->rat = new Rat(500, 600, this->textures["RAT1_SHEET"]);
+	
+}
+
+void GameStates::initPauseMenuGameOver()
+{
+	
+	const VideoMode& vm = this->stateData->gfxSettings->resolutions;
+	this->gameOverState = new GameOverState(this->stateData->gfxSettings->resolutions, this->font);
+	this->gameOverState->addButtons("Quit", gui::p2pY(74.f, vm), gui::p2pX(13.f, vm), gui::p2pY(6.f, vm), gui::calucuateCharacterSize(vm), "Quit");
+		
+}
+
+void GameStates::initHelpState()
+{
+	const VideoMode& vm = this->stateData->gfxSettings->resolutions;
+	this->helpState = new HelpState(this->stateData->gfxSettings->resolutions, this->font);
+	this->helpState->addButtons("Quit", gui::p2pY(74.f, vm), gui::p2pX(13.f, vm), gui::p2pY(6.f, vm), gui::calucuateCharacterSize(vm), "Quit");
 }
 
 
 void GameStates::initPlayers()
 {
-	this->player = new Player(0, 0, this->textures["Player_1"]);
-	this->player2 = new Player2(800, 600, this->textures["PLAYER2_SHEET"]);
-	this->fighter = new Fighter(1000, 400, this->textures["FIGHTER_SHEET"]);
+	this->chooseCharacter();
+
+	this->enemy = new Enemy(1600, 900, this->textures["PLAYER2_SHEET"]);//WROG
+
+
+	if (characterWill==1)
+	{
+		
+		this->player = new Player(1600, 400, this->textures["WILL_SHEET"]);
+		
+	}
+
+	if (characterAlyss==1)
+	{
+		
+		this->player = new Player(1600, 400, this->textures["ALYSS_SHEET"]);	
+		
+	}
+
+	if (characterHorace==1)
+	{
+		this->player = new Player(1600, 400, this->textures["HORACE_SHEET"]);
+		
+	}
 }
 
 void GameStates::updateView(const float& dt)
 {
+	
 	this->view.setSize(Vector2f(static_cast<float>(stateData->gfxSettings->resolutions.width), static_cast<float>(stateData->gfxSettings->resolutions.height)));
 	this->view.setCenter(
 		floor(this->player->getPosition().x + (static_cast<float>(this->mousePostWindow.x) - static_cast<float>(this->stateData->gfxSettings->resolutions.width / 2)) / 10.f),
@@ -200,29 +249,37 @@ void GameStates::update(const float& dt)
 	this->updatePlayerGui(dt);
 	this->updateDebugText(dt);
 	
-	if (!paused)//jezeli nie ma pauzy to ciagle aktualizuj
+	if (!paused && !gameOver && !help)//jezeli nie ma pauzy to ciagle aktualizuj
 	{
 		this->updateView(dt);
 		this->updatePlayerInput(dt);
 		this->updateWorldBoundsCollision(player,dt);//musze sprawdzic kolizje przed ruszeniem postaci, koniecznie o tym pamietaj
 		this->updateTileMap(player,dt);
-		this->player->update(dt,this->mousePostView,this->view);
-		this->player2->update(dt,this->mousePostView,this->view);
-		this->fighter->update(dt,this->mousePostView,this->view);
-		this->rat->update(dt,this->mousePostView,this->view);
+		this->player->update(dt, this->mousePostView, this->view);
 		this->playerGui->update(dt);
-		this->updateDistance(player, player2, dt);
-		this->updateCombat(player,player2,dt);
+		this->enemy->update(dt,this->mousePostView,this->view);
+		this->updateDistance(player, enemy, dt);
 		this->updateEmemies(dt);
 		this->tts->update(dt);
-		
-		
 		
 	}
 	else
 	{
-
-		this->pauseMenu->update(this->mousePostWindow);
+		if (help)
+		{
+			this->helpState->update(this->mousePostWindow);
+			
+		}
+		else if (gameOver)
+		{
+			this->gameOverState->update(this->mousePostWindow);
+			
+		}
+		else if (paused)
+		{
+			this->pauseMenu->update(this->mousePostWindow);
+			
+		}
 		this->updatePauseMenuButtons();
 	}
 }
@@ -244,16 +301,26 @@ void GameStates::render(RenderTarget* target)
 	this->tileMap->render(this->renderTexture);
 	this->tts->render(this->renderTexture);
 	this->player->render(this->renderTexture);
-	this->player2->render(this->renderTexture);
-	this->fighter->render(this->renderTexture);
-	this->rat->render(this->renderTexture);
+	this->enemy->render(this->renderTexture);
 	renderTexture.setView(this->renderTexture.getDefaultView());
 	this->playerGui->render(this->renderTexture);
-	if (this->paused)
+	
+	if (gameOver)
 	{
-		renderTexture.setView(this->renderTexture.getDefaultView());
-		this->pauseMenu->render(renderTexture);
+			renderTexture.setView(this->renderTexture.getDefaultView());
+			this->gameOverState->render(renderTexture);
 	}
+	else if (help)
+	{
+			renderTexture.setView(this->renderTexture.getDefaultView());
+			this->helpState->render(renderTexture);
+	}
+	else if(paused)
+	{
+			renderTexture.setView(this->renderTexture.getDefaultView());
+			this->pauseMenu->render(renderTexture);
+	}
+	
 	this->renderTexture.display();
 	this->renderSprite.setTexture(this->renderTexture.getTexture());
 	target->draw(renderSprite);
@@ -261,6 +328,60 @@ void GameStates::render(RenderTarget* target)
 
 	
 
+}
+
+void GameStates::saveToFile(string path)
+{
+	ofstream ofs(path);
+	if (ofs.is_open())
+	{
+		ofs << this->player->getPosition().x << endl;
+		ofs << this->player->getPosition().y << endl;
+		ofs << this->player->getAttributeComponent()->hp << endl;
+		ofs << this->player->getAttributeComponent()->exp << endl;
+		ofs << this->enemy->getPosition().x << endl;
+		ofs << this->enemy->getPosition().y << endl;
+		ofs << this->enemy->getAttributeComponent()->hp << endl;
+		ofs << this->enemy->getAttributeComponent()->exp << endl;
+		
+	}
+	ofs.clear();
+	ofs.seekp(0);//ustaw na poczatek
+	ofs.close();
+
+}
+
+void GameStates::chooseCharacter()
+{
+	ifstream ifsAlyss("Config/alyss.txt");
+	if (ifsAlyss.is_open())
+	{
+		ifsAlyss >> characterAlyss;
+	}
+	ifsAlyss.clear();
+	ifsAlyss.seekg(0);//beginning
+	ifsAlyss.close();
+	
+
+	ifstream ifsHorace("Config/horace.txt");
+	if (ifsHorace.is_open())
+	{
+		ifsHorace >> characterHorace;
+	}
+	ifsHorace.clear();
+	ifsHorace.seekg(0);//beginning
+	ifsHorace.close();
+
+
+	ifstream ifsWill("Config/will.txt");
+	if (ifsWill.is_open())
+	{
+		ifsWill >> characterWill;
+	}
+	ifsWill.clear();
+	ifsWill.seekg(0);//beginning
+	ifsWill.close();
+	
 }
 
 const bool GameStates::getKeyTime()
@@ -307,17 +428,33 @@ void GameStates::updatePlayerGui(const float& dt)
 
 void GameStates::updateInput(const float dt)
 {
-	if (sf::Keyboard::isKeyPressed(Keyboard::Escape)/*::Key(this->keybinds.at("Close")*/ && this->getKeyTime())//jak bedziesz miala czas do zmien na keybinds itp.
+	if (sf::Keyboard::isKeyPressed(Keyboard::Escape)&& this->getKeyTime())//jak bedziesz miala czas do zmien na keybinds itp.
 	{
 		if (!this->paused)
 		{
-			this->pauseState();
+			this->pauseinState();
+			this->ungameOverStateinState();
+			this->unhelpinState();
 		}
 		else
 		{
-			this->unpauseState();
+			this->unpauseinState();
 		}
 	}
+	else if (Keyboard::isKeyPressed(Keyboard::F1) && this->getKeyTime())
+	{
+		if (!this->help)
+		{
+			this->helpStateinState();
+			this->ungameOverStateinState();
+			this->unpauseinState();
+		}
+		else
+		{
+			this->unhelpinState();
+		}
+	}
+	
 }
 
 void GameStates::updatePauseMenuButtons()
@@ -326,75 +463,98 @@ void GameStates::updatePauseMenuButtons()
 	{
 		this->endState();
 	}
+	if (helpState->isButtonPressed("Quit"))
+	{
+		this->endState();
+	}
+	if (gameOverState->isButtonPressed("Quit"))
+	{
+		this->endState();
+	}
+	if(pauseMenu->isButtonPressed("Save"))
+	{
+		this->saveToFile("Config/saveGame.txt");
+	}
 }
+
 
 void GameStates::updatePlayer(const float& dt)
 {
 	this->player->update(dt, this->mousePostView, this->view);
-	this->player2->update(dt, this->mousePostView, this->view);
+	this->enemy->update(dt, this->mousePostView, this->view);
 
 }
 
 void GameStates::updateEmemies(const float& dt)
 {
-
-	if (Mouse::isButtonPressed(Mouse::Left))
-	{
+	if (Mouse::isButtonPressed(sf::Mouse::Left) && this->player->getWeapon()->getAttackTimer())
 		this->player->setInitAttack(true);
-	}
-	this->player->setInitAttack(false);
 
-	if (sf::Mouse::isButtonPressed(sf::Mouse::Left) && this->player->getWeapon()->getAttackTimer())
-		this->player->setInitAttack(true);
-	{
-		this->updateWorldBoundsCollision(player, dt);
-		this->updateWorldBoundsCollision(player2, dt);
-		
+	
+		enemy->update(dt, this->mousePostView, this->view);
 
-		if (player2->isDead())
+		this->updateCombat(player,enemy, dt);
+		this->updateWorldBoundsCollision(player,dt);
+		this->updateWorldBoundsCollision(enemy,dt);
+
+		//DANGEROUS!!!
+		if (enemy->isDead())
 		{
 			this->player->gainExp(enemy->getGainExp());
 			this->tts->addTextTag(Experience_Tag, this->player->getPosition().x - 40.f, this->player->getPosition().y - 30.f, static_cast<int>(enemy->getGainExp()), "+", "EXP");
-			delete player2;
-		}
-		
 
-	}
+		}
 
 	this->player->setInitAttack(false);
-	
 }
 
-void GameStates::updateCombat(Player* player ,Player2*player2,const float& dt)
+void GameStates::updateCombat(Player* player ,Enemy* enemy,const float& dt)
 {
-	
+
+
 	if (this->player->getInitAttack()
-		&& player2->getGlobalBounds().contains(this->mousePostView) 
-		&& player2->getDistance(*this->player) < this->player->getWeapon()->getRange())
+		&& enemy->getDistance(*this->player) < this->player->getWeapon()->getRange())
 	{
 		
+			cout << "Jestem " << endl;
 			int damage = static_cast<int>(this->player->getWeapon()->getDamage());
-			player2->loseHp(damage);
-			this->tts->addTextTag(Default_Tag, player2->getPosition().x, player2->getPosition().y , damage,"","");
+			enemy->loseHp(damage);
+			this->tts->addTextTag(Default_Tag, enemy->getPosition().x, enemy->getPosition().y , damage,"","");
+			
 		
 	}
-	if (player2->getGlobalBounds().intersects(this->player->getGlobalBounds()) && this->player->getDamageTimer())
+	
+
+	if (enemy->getGlobalBounds().intersects(this->player->getGlobalBounds()) && this->player->getDamageTimer())
 	{
-		int damage = player2->getAttributeComponent()->damageMax;
+		cout << "Jestem 2" << endl;
+		int damage = enemy->getAttributeComponent()->damageMax;
 		this->player->loseHp(damage);
 		this->tts->addTextTag(Negative_Tag, player->getPosition().x - 30.f, player->getPosition().y, damage, "-", "HP");
+		if (this->player->getAttributeComponent()->hp == 0)
+		{
+			
+
+			if (!this->gameOver)
+			{
+				this->gameOverStateinState();
+				this->unhelpinState();
+				this->unpauseinState();
+				this->initPauseMenuGameOver();
+			}
+			else
+			{
+				this->ungameOverStateinState();
+			}
+			
+			
+		}
 	}
 }
 
 void GameStates::updateDebugText(const float dt)
 {
 
-	std::stringstream ss;
-
-	ss << "Mouse Pos View: " << this->mousePostView.x << " " << this->mousePostView.y << "\n"
-		<< "Active Enemies: " << this->activeEnemies.size() << "\n";
-
-	this->debugText.setString(ss.str());
 }
 void GameStates::updateWorldBoundsCollision(Entity* entity, const float& dt)
 {
@@ -420,53 +580,31 @@ void GameStates::updateWorldBoundsCollision(Entity* entity, const float& dt)
 	}
 }
 
-void GameStates::updateDistance(Player* player, Player2* player2,const float&dt)
+void GameStates::updateDistance(Player* player, Enemy* enemy,const float&dt)
 {
+
 	Vector2f moveVec;
-	moveVec.x = player->getPosition().x - player2->getPosition().x;
-	moveVec.y = player->getPosition().y - player2->getPosition().y;
+	moveVec.x = player->getPosition().x - enemy->getPosition().x;
+	moveVec.y = player->getPosition().y - enemy->getPosition().y;
 
 	float vecLength = sqrt(pow(moveVec.x, 2) + pow(moveVec.y, 2));
 
 	moveVec /= vecLength;
 
-	if ((player->getPosition().x != player2->getPosition().x) && abs(vecLength) < 500.f|| (player->getPosition().y != player2->getPosition().y) && abs(vecLength) < 500.f)//jezeli ich pozycje sa rozne
+	if ((player->getPosition().x != enemy->getPosition().x) && abs(vecLength) < 500.f|| (player->getPosition().y != enemy->getPosition().y) && abs(vecLength) < 500.f)//jezeli ich pozycje sa rozne
 	{
-		if (player->getPosition().x - player2->getPosition().x > 60|| player->getPosition().y - player2->getPosition().y > 60)
+		if (player->getPosition().x - enemy->getPosition().x > 60|| player->getPosition().y - enemy->getPosition().y > 60)
 		{
-			player2->move(moveVec.x, moveVec.y, dt);
+			enemy->move(moveVec.x, moveVec.y, dt);
 		}
 		else
 		{
-			player2->stopVelocity();
+			enemy->stopVelocity();
 		}
 
 	}
-
-
-	Vector2f moveVec1;
-	moveVec1.x = player->getPosition().x - fighter->getPosition().x;
-	moveVec1.y = player->getPosition().y - fighter->getPosition().y;
-
-	float vecLength1 = sqrt(pow(moveVec1.x, 2) + pow(moveVec1.y, 2));
-
-	moveVec1 /= vecLength1;
-
-	if ((player->getPosition().x != fighter->getPosition().x) && abs(vecLength1) < 500.f || (player->getPosition().y != fighter->getPosition().y) && abs(vecLength1) < 500.f)//jezeli ich pozycje sa rozne
-	{
-		if (player->getPosition().x - fighter->getPosition().x > 60 || player->getPosition().y - fighter->getPosition().y > 60)
-		{
-			fighter->move(moveVec1.x, moveVec1.y, dt);
-		}
-
-	}
-	else
-	{
-		fighter->stopVelocity();
-	}
+	
 }
-
-
 
 
 
