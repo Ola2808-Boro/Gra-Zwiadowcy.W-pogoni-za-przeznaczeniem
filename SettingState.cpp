@@ -1,56 +1,31 @@
 #include"stdafx.h"
 #include "SettingState.h"
 
-//Konstruktor
+//--------------------------------------------------------Konstruktor------------------------------------------//
 SettingState::SettingState(StateData* stateData):State(stateData)
 {
 	this->initVariables();
-	this->initBackground();
 	this->InitFonts();
 	this->initKeybinds();
 	this->initGui();
-	this->initText();
+	this->loadTextures();
+
 }
-//Destruktor
+//---------------------------------------------------------Destruktor-------------------------------------------//
 SettingState::~SettingState()//wszystko sobie usuwam
 {
-	auto it = this->buttons.begin();
-	for (auto it = this->buttons.begin(); it != buttons.end(); ++it)
-	{
-		delete it->second;
-	}
 	
-
-	auto it2 = this->dropDownList.begin();
-	for (auto it2 = this->dropDownList.begin(); it2 != dropDownList.end(); ++it2)
-	{
-		delete it2->second;
-	}
 }
 
-//Funkcje z MainMenuState
+//---------------------------------------------------Funkcje-----------------------------------------------------------------//
 void SettingState::initKeybinds()
 {
-	ifstream ifs("Config/gamestate_keybinds.ini");
-	if (ifs.is_open())
-	{
-		string key = "";
-		string key2 = "";
-
-		while (ifs >> key >> key2)//dopoki pobiera te dwie wartosci
-		{
-			this->keybinds[key] = this->supportedKeys->at(key2);
-		}
-
-	}
-	ifs.clear();
-	ifs.seekg(0);//beginning
-	ifs.close();
+	
 }
 
 void SettingState::InitFonts()
 {
-	if (!this->font.loadFromFile("Fonts/FjallaOne-Regular.ttf"))
+	if (!this->font.loadFromFile("Fonts/Langar-Regular.ttf"))
 	{
 		throw("Error::Could not load font");
 	}
@@ -58,51 +33,93 @@ void SettingState::InitFonts()
 
 void SettingState::initGui()//twprze i przycisk i liste
 {
-	//(float x, float y, float width, float height, string text_button, Font font_button, Color hoverColor, Color activeColor, Color idleColor);
-	this->buttons["Back"] = new gui::Button(350, 400, 150, 50, "Back", this->font, Color::Blue, Color::Cyan, Color::Yellow, Color::Red, Color::Black, Color::Blue, 20, Color::Red, Color::Yellow, Color::White,0);
-	this->buttons["Apply"] = new gui::Button(350, 300, 150, 50, "Apply", this->font, Color::Blue, Color::Cyan, Color::Yellow, Color::Red, Color::Black, Color::Blue, 20, Color::Red, Color::Yellow, Color::White,0);//sprobowac migania z 0
-	
-	vector<string> modes_str;
-	for (auto& i : this->modes)
-	{
-		modes_str.push_back(std::to_string(i.width) + 'x' + to_string(i.height));
-	}
+	const VideoMode& vm = this->stateData->gfxSettings->resolutions;
 
-	//string li[] = { "1920x1080","800x600","640x480"};//nie musze okreslac ilosci
-	this->dropDownList["Resolution"] = new gui::DropDownList(350, 200, 200, 50, modes_str.data(), font,modes_str.size());
-	/*	float x, float y, float width, float height, string list[], Font& font, unsigned nrOfElements, unsigned default_index = 0*/
-
-}
-
-void SettingState::initBackground()
-{
-	this->background.setSize(Vector2f(window->getSize().x, window->getSize().y));
-	if (!this->backgroundtexture.loadFromFile("Resources/Images/background/pobrane.jpg"))
+	this->background.setSize(Vector2f(static_cast<float>(vm.width), static_cast<float>(vm.height)));
+	if (!this->backgroundtexture.loadFromFile("Resources/Images/background/tloczarne1.jpg"))
 	{
 		cout << "Error, wrong in initBackground()" << endl;//jezeli nie uda sie zaladowowac
 	}
 	//ustawilam tylko dla backgroundtexture, a teraz dla background
 	background.setTexture(&this->backgroundtexture);
+
+
+
+	this->infoText.setFont(font);
+	this->infoText.setFillColor(Color::Red);
+	this->infoText.setPosition(gui::p2pX(25.f, vm), gui::p2pX(5.f, vm));
+	this->infoText.setString("CHOOSE THE CHARACTER");
+	this->infoText.setCharacterSize(100);
+
+
+
+	//sprawdzone pod wzgledem id i dla bledy calculateCharacterSize
+	//(float x, float y, float width, float height, string text_button, Font font_button, Color hoverColor, Color activeColor, Color idleColor);
+	this->buttons["Back"] = new gui::Button(gui::p2pX(72.f, vm), gui::p2pY(90.5f, vm),gui::p2pX(13.f, vm), gui::p2pY(6.f, vm),  "Back", this->font, Color(240, 101, 14, 94), Color::Cyan, Color::Yellow, Color(240, 101, 14, 94), Color::Black, Color::Blue, gui::calucuateCharacterSize(vm), Color::Red, Color::Yellow, Color::White);
+	
+	//Will
+	this->buttons["Will"] = new gui::Button(gui::p2pX(15.f, vm), gui::p2pY(75.5f, vm),gui::p2pX(20.f, vm), gui::p2pY(6.f, vm), "Will Treaty", this->font, Color(240, 101, 14, 94), Color::Cyan, Color::Yellow, Color(240, 101, 14, 94), Color::Black, Color::Blue, gui::calucuateCharacterSize(vm), Color::Red, Color::Yellow, Color::White);//sprobowac migania z 0
+	//Alyss
+	this->buttons["Alyss"] = new gui::Button(gui::p2pX(40.f, vm), gui::p2pY(75.5f, vm),gui::p2pX(23.f, vm), gui::p2pY(6.f, vm), "Alyss Mainwaring", this->font, Color(240, 101, 14, 94), Color::Cyan, Color::Yellow, Color(240, 101, 14, 94), Color::Black, Color::Blue, gui::calucuateCharacterSize(vm), Color::Red, Color::Yellow, Color::White);//sprobowac migania z 0
+	//Horace
+	this->buttons["Horace"] = new gui::Button(gui::p2pX(65.f, vm), gui::p2pY(75.5f, vm),gui::p2pX(20.f, vm), gui::p2pY(6.f, vm), "Horace Altman", this->font, Color(240, 101, 14, 94), Color::Cyan, Color::Yellow, Color(240, 101, 14, 94), Color::Black, Color::Blue, gui::calucuateCharacterSize(vm), Color::Red, Color::Yellow, Color::White);//sprobowac migania z 0
+	
+	
+
+	
 }
+
+void SettingState::resetGui()
+{
+	
+}
+
+
 
 void SettingState::initVariables()//uzywam tego w liscie
 {
 	modes = VideoMode::getFullscreenModes();
 }
-void SettingState::initText()
+
+
+
+void SettingState::loadTextures()
 {
-	optionsText.setFont(font);
-	optionsText.setCharacterSize(30);
-	optionsText.setPosition(Vector2f(100.f, 00.f));
-	optionsText.setFillColor(Color::Blue);
-	optionsText.setString("Resolution\n Fullscreen \n Vsync \ Antialasing");
+	//Will
+	this->willTreatyShowing.setSize(Vector2f(300,500));
+	if (!this->willTreatyShowingTexture.loadFromFile("Resources/Images/sprite/will11111.png"))
+	{
+		cout << "Error, wrong in initBackground()" << endl;//jezeli nie uda sie zaladowowac
+	}
+	//ustawilam tylko dla backgroundtexture, a teraz dla background
+	willTreatyShowing.setTexture(&this->willTreatyShowingTexture);
+	willTreatyShowing.setPosition(300, 300);
+	
+
+	//ALYSS
+	this->alyssShowing.setSize(Vector2f(300,500));
+	if (!this->alyssShowingTexture.loadFromFile("Resources/Images/sprite/alisse11.png"))
+	{
+		cout << "Error, wrong in initBackground()" << endl;//jezeli nie uda sie zaladowowac
+	}
+	//ustawilam tylko dla backgroundtexture, a teraz dla background
+	alyssShowing.setTexture(&alyssShowingTexture);
+	alyssShowing.setPosition(800, 300);
+
+	//HORACE
+	this->horaceShowing.setSize(Vector2f(300, 500));
+	if (!this->horaceShowingTexture.loadFromFile("Resources/Images/sprite/horace11.png"))
+	{
+		cout << "Error, wrong in initBackground()" << endl;//jezeli nie uda sie zaladowowac
+	}
+	//ustawilam tylko dla backgroundtexture, a teraz dla background
+	horaceShowing.setTexture(&horaceShowingTexture);
+	horaceShowing.setPosition(1300, 300);
 }
+
 void SettingState::updateGui(const float& dt)
 {
 
-	system("cls");
-	cout << this->mousePostView.x << " " << this->mousePostView.y << endl;//wypisuje sobie wspolrzedne,moje pomocnicze
-	//wszytsko do button
 	for (auto& it : this->buttons)
 	{
 		it.second->update(mousePostWindow);
@@ -111,16 +128,28 @@ void SettingState::updateGui(const float& dt)
 	{
 		this->endState();
 	}
-	if (this->buttons["Apply"]->isPressed())//wychodze 
+
+	if (this->buttons["Will"]->isPressed())//wychodze 
 	{
-		this->stateData->gfxSettings->resolutions = this->modes[this->dropDownList["RESOLUTION"]->getActiveElementId()];
-		window->create(this->stateData->gfxSettings->resolutions, this->stateData->gfxSettings->title, Style::Default);
+		this->saveToFile("Config/will.txt");
+
 	}
-	//wszytsko do listy
-	for (auto& it : this->dropDownList)
+	
+
+	if (this->buttons["Alyss"]->isPressed())//wychodze 
 	{
-		it.second->update(mousePostWindow,dt);
+		this->saveToFile("Config/alyss.txt");
+
 	}
+	
+
+	if (this->buttons["Horace"]->isPressed())//wychodze 
+	{
+		this->saveToFile("Config/horace.txt");
+
+	}
+	
+	
 	
 }
 
@@ -132,24 +161,31 @@ void SettingState::renderGui(RenderTarget& target)
 		it.second->render(target);
 	}
 
-	for (auto& it : this->dropDownList)
-	{
-		it.second->render(target);
-	}
+
 }
+
+void SettingState::saveToFile(string path)
+{
+	ofstream ofs(path);
+	if (ofs.is_open())
+	{
+		ofs << 1 << endl;
+
+	}
+	ofs.clear();
+	ofs.seekp(0);//ustaw na poczatek
+	ofs.close();
+
+}
+
 
 void SettingState::update(const float& dt)
 {
-
-	this->updatePlayerInput(dt);
 	this->updateMousePosition();
+	this->updatePlayerInput(dt);
 	this->updateGui(dt);
 	
-
-
 }
-
-
 
 void SettingState::render(RenderTarget* target)
 {
@@ -159,14 +195,18 @@ void SettingState::render(RenderTarget* target)
 	}
 
 	target->draw(this->background);
+	target->draw(this->willTreatyShowing);
+	target->draw(this->alyssShowing);
+	target->draw(this->horaceShowing);
 	this->renderGui(*target);
 	target->draw(optionsText);
+	target->draw(infoText);
 
 }
 
 void SettingState::updatePlayerInput(const float& dt)
 {
-
+	
 }
 
 
