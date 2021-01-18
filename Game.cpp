@@ -131,12 +131,15 @@ void Game::update()
 
 void Game::run()
 {
+	
 	Music music;
-	if (!music.openFromFile("proba1music.wav"));
+
+
+	if (!music.openFromFile("Music/proba1music.wav"));
 	{
-		cout << "Blad w muzyce" << endl;
+			cout << "Blad w muzyce" << endl;
 	}
-	music.setVolume(50);//pamietaj
+	music.setVolume(40);//pamietaj
 	music.setLoop(true);
 	music.play();
 	while (this->window->isOpen())
@@ -149,6 +152,31 @@ void Game::run()
 		this->render();
 	}
 }
+
+//void Game::saveToFile(string path)
+//{
+//	ofstream ofs(path);
+//	if (ofs.is_open())
+//	{
+//		ofs << 1;
+//
+//	}
+//	ofs.clear();
+//	ofs.seekp(0);//ustaw na poczatek
+//	ofs.close();
+//}
+
+//void Game::loadFromFile(string path)
+//{
+//	ifstream ifs(path);
+//	if (ifs.is_open())
+//	{
+//		ifs >> music;
+//	}
+//	ifs.clear();
+//	ifs.seekg(0);//beginning
+//	ifs.close();
+//}
 
 void Game::render()
 {
