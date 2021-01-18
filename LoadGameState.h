@@ -11,11 +11,7 @@
 #include "Sword.h"
 #include "Bow.h"
 #include "Enemy.h"
-#include "Fighter.h"
-#include "AlyssMainwaring.h"
-#include "HoraceAltman.h"
-#include "WillTreaty.h"
-
+#include "EnemyGui.h"
 #include "AllEnemies.h"
 #include "TextTagSystem.h"
 
@@ -36,13 +32,12 @@ private:
 
 	Player* player;
 	Enemy* enemy;
-	Fighter* fighter;
 	Player* Will;
 	Player* Alyss;
 	Player* Horace;
 
 	PlayerGui* playerGui;
-	
+	EnemyGui* enemyGui;
 
 
 	Font font;
@@ -68,6 +63,7 @@ private:
 	void initPauseMenu();
 	void initTileMap();
 	void initPlayerGui();
+	void initEnemyGui();
 	void initEnemySystem();
 	void initSystems();
 	void initKeyTime();
@@ -85,6 +81,7 @@ public:
 	int characterHorace;
 	int characterWill;
 	bool load;
+
 	//zmienne dotyczace 
 	float playerPosition_x;
 	float playerPosition_y;
@@ -95,6 +92,10 @@ public:
 	float enemyPosition_y;
 	int enemyHp;
 	int enemyExp;
+	int enemyNumberSave;
+	int enemyNumber;
+	int levelSave;
+	bool changeEnemy;
 
 	//wszystkie update
 	void updateView(const float& dt);
@@ -115,11 +116,18 @@ public:
 	void chooseCharacter();
 	//zapisywanie gry
 	void saveToFile(string path);
+	void saveToFileGui(string path);
 	void loadFromFile(string path);
-
+	void loadFromFileGui(string path);
+	int prawda_czy_falsz;
 
 	//funkcje dostepu
 	const bool getKeyTime();
+
+	// enemy
+	bool controlExp;
+	float position_enemy_x;
+	float position_enemy_y;
 
 
 	Texture temp;//pomoc do zaladowania struktury
