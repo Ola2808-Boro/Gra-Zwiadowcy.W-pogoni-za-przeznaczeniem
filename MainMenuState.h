@@ -2,7 +2,6 @@
 #define MAINMENUSTATE_H
 
 #include "GameStates.h"
-#include "EditorState.h"
 #include "Gui.h"
 #include "SettingState.h"
 #include "LoadGameState.h"
@@ -30,6 +29,8 @@ public:
 	void updateButton();
 	void renderButtton(RenderTarget&target);
 	void saveToFileNOT(string path);
+	void saveToFile(string path);
 };
 
 #endif 
+
