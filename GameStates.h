@@ -10,10 +10,7 @@
 #include "Sword.h"
 #include "Bow.h"
 #include "Enemy.h"
-#include "AlyssMainwaring.h"
-#include "HoraceAltman.h"
-#include "WillTreaty.h"
-
+#include "EnemyGui.h"
 
 #include "TextTagSystem.h"
 
@@ -30,7 +27,7 @@ private:
 	
 	Text debugText;
 	
-
+	vector<Enemy*> activeEnemies;//konstruktor i destruktor
 
 	Player *player;
 	Enemy* enemy;
@@ -39,6 +36,7 @@ private:
 	Player* Horace;
 	
 	PlayerGui* playerGui;
+	EnemyGui* enemyGui;
 	
 
 
@@ -56,7 +54,15 @@ private:
 	int characterHorace;
 	int characterWill;
 
-
+	int enemyType;
+	int enemyAmount;
+	int enemyCounter;
+	Clock enemySpawnTimer;
+	Int32 enemyTimeToSpawn;
+	float enemyMaxDistance;
+	Clock despawnTimer;
+	Int32 despawnTimerMax;
+	bool firstSpawn;
 
 
 	TextTagSystem* tts;
@@ -71,13 +77,14 @@ private:
 	void initPauseMenu();
 	void initTileMap();
 	void initPlayerGui();
+	void initEnemyGui();
 	void initSystems();
 	void initKeyTime();
 	void initDebugText();
 	void initEnemy();
 	void initPauseMenuGameOver();
 	void initHelpState();
-	
+	void initEnemySystem();
 
 public:
 	//konstruktor
@@ -104,12 +111,19 @@ public:
 
 	//zapisywanie gry
 	void saveToFile(string path);
-
+	void saveToFileEnemyPosition(string path);
+	void saveToFileGui(string path);
 	//
 	void chooseCharacter();
 	//funkcje dostepu
 	const bool getKeyTime();
 
+	// enemy
+	bool controlExp;
+	int enemyNumber;
+	float position_enemy_x;
+	float position_enemy_y;
+	
 
 	Texture temp;//pomoc do zaladowania struktury
 };
