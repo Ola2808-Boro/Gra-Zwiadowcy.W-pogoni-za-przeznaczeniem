@@ -47,16 +47,31 @@ void SettingState::initGui()//twprze i przycisk i liste
 
 	this->infoText.setFont(font);
 	this->infoText.setFillColor(Color::Red);
-	this->infoText.setPosition(gui::p2pX(25.f, vm), gui::p2pX(5.f, vm));
+	this->infoText.setPosition(gui::p2pX(25.f, vm), gui::p2pY(5.f, vm));
 	this->infoText.setString("CHOOSE THE CHARACTER");
 	this->infoText.setCharacterSize(100);
 
+	this->horaceShowingText.setFont(font);
+	this->horaceShowingText.setFillColor(Color::Red);
+	this->horaceShowingText.setPosition(gui::p2pX(72.f, vm), gui::p2pY(20.f, vm));
+	this->horaceShowingText.setString("Hard");
+	this->horaceShowingText.setCharacterSize(60);
 
+	this->alyssShowingText.setFont(font);
+	this->alyssShowingText.setFillColor(Color::Red);
+	this->alyssShowingText.setPosition(gui::p2pX(43.f, vm), gui::p2pY(20.f, vm));
+	this->alyssShowingText.setString("Medium");
+	this->alyssShowingText.setCharacterSize(60);
+
+	this->willShowingText.setFont(font);
+	this->willShowingText.setFillColor(Color::Red);
+	this->willShowingText.setPosition(gui::p2pX(20.f, vm), gui::p2pY(20.f, vm));
+	this->willShowingText.setString("Easy");
+	this->willShowingText.setCharacterSize(60);
 
 	//sprawdzone pod wzgledem id i dla bledy calculateCharacterSize
 	//(float x, float y, float width, float height, string text_button, Font font_button, Color hoverColor, Color activeColor, Color idleColor);
-	this->buttons["Back"] = new gui::Button(gui::p2pX(72.f, vm), gui::p2pY(90.5f, vm),gui::p2pX(13.f, vm), gui::p2pY(6.f, vm),  "Back", this->font, Color(240, 101, 14, 94), Color::Cyan, Color::Yellow, Color(240, 101, 14, 94), Color::Black, Color::Blue, gui::calucuateCharacterSize(vm), Color::Red, Color::Yellow, Color::White);
-	
+	this->buttons["Back"] = new gui::Button(gui::p2pX(72.f, vm), gui::p2pY(90.5f, vm),gui::p2pX(13.f, vm), gui::p2pY(6.f, vm),  "Back", this->font, Color(240, 101, 14, 94), Color::Cyan, Color::Yellow, Color(240, 101, 14, 94), Color::Black, Color::Blue, gui::calucuateCharacterSize(vm), Color::Red, Color::Yellow, Color::White);	
 	//Will
 	this->buttons["Will"] = new gui::Button(gui::p2pX(15.f, vm), gui::p2pY(75.5f, vm),gui::p2pX(20.f, vm), gui::p2pY(6.f, vm), "Will Treaty", this->font, Color(240, 101, 14, 94), Color::Cyan, Color::Yellow, Color(240, 101, 14, 94), Color::Black, Color::Blue, gui::calucuateCharacterSize(vm), Color::Red, Color::Yellow, Color::White);//sprobowac migania z 0
 	//Alyss
@@ -87,7 +102,7 @@ void SettingState::loadTextures()
 {
 	//Will
 	this->willTreatyShowing.setSize(Vector2f(300,500));
-	if (!this->willTreatyShowingTexture.loadFromFile("Resources/Images/sprite/will11111.png"))
+	if (!this->willTreatyShowingTexture.loadFromFile("Resources/Images/sprite/will111.png"))
 	{
 		cout << "Error, wrong in initBackground()" << endl;//jezeli nie uda sie zaladowowac
 	}
@@ -198,6 +213,9 @@ void SettingState::render(RenderTarget* target)
 	target->draw(this->willTreatyShowing);
 	target->draw(this->alyssShowing);
 	target->draw(this->horaceShowing);
+	target->draw(this->horaceShowingText);
+	target->draw(this->alyssShowingText);
+	target->draw(this->willShowingText);
 	this->renderGui(*target);
 	target->draw(optionsText);
 	target->draw(infoText);
@@ -208,6 +226,5 @@ void SettingState::updatePlayerInput(const float& dt)
 {
 	
 }
-
 
 
