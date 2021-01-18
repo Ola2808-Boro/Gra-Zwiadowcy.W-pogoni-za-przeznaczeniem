@@ -30,6 +30,10 @@ public:
 	int defence;
 	int luck;
 
+	//HP WROGA
+	int hpEnemy;
+	int hpMaxEnemy;
+
 	//konstruktor
 	AttributeComponent(int level);
 	//destruktor
@@ -51,7 +55,25 @@ public:
 
 	void render(RenderTarget& target);
 
-	
+	void loadFromFile(string path);
+	void loadFromFileGui(string path);
 
+
+	float playerPosition_x;
+	float playerPosition_y;
+	int playerHp;
+	int playerExp;
+
+	float enemyPosition_x;
+	float enemyPosition_y;
+	int enemyHp;
+	int enemyExp;
+	int enemyNumberSave;
+	int enemyNumber;
+	int levelSave;
+	bool changeEnemy;
+	int prawda_czy_falsz;
+	int saveNumber;
+	bool load;
 };
 #endif // !ATTRIBUTTECOMPONENT
