@@ -18,9 +18,10 @@ LoadGameState::LoadGameState(StateData* stateData) :State(stateData)
 	this->initDebugText();
 	this->loadFromFile("Config/saveGame.txt");
 	this->initPlayers();
-	this->initPlayerGui();
-	this->initEnemySystem();
 	this->initEnemy();
+	this->initPlayerGui();
+	this->initEnemyGui();
+	this->initEnemySystem();
 	this->initTileMap();
 	this->initSystems();
 	
@@ -37,10 +38,8 @@ LoadGameState::~LoadGameState()
 	delete this->helpState;
 	delete this->player;
 	delete this->enemy;
-	delete this->Alyss;
-	delete this->Will;
-	delete this->Horace;
 	delete this->playerGui;
+	delete this->enemyGui;
 	delete this->tileMap;
 	delete this->tts;
 	
@@ -97,27 +96,10 @@ void LoadGameState::initKeybinds()
 void LoadGameState::initTextures()
 {
 
-	this->temp.loadFromFile("Resources/Images/sprite/PLAYER_SHEET2.png");
-	this->textures["Player_1"] = temp;
-	if (!this->textures["RAT1_SHEET"].loadFromFile("Resources/Images/sprite/rat1_60x64.png"))
+	
+	if (!this->textures["ENEMY_SHEET"].loadFromFile("Resources/Images/sprite/enemy.png"))
 	{
 		throw "ERROR::GAME_STATE::COULD_NOT_LOAD_RAT1_TEXTURE";
-	}
-	if (!this->textures["PLAYER2_SHEET"].loadFromFile("Resources/Images/sprite/PLAYER_SHEET.png"))
-	{
-		throw "ERROR::GAME_STATE::COULD_NOT_LOAD_RAT1_TEXTURE";
-	}
-	if (!this->textures["BIRD1_SHEET"].loadFromFile("Resources/Images/sprite/bird1_61x57.png"))
-	{
-		throw "ERROR::GAME_STATE::COULD_NOT_LOAD_BIRD1_TEXTURE";
-	}
-	if (!this->textures["HORES_SHEET"].loadFromFile("Resources/Images/sprite/horse.jpg"))
-	{
-		throw "ERROR::GAME_STATE::COULD_NOT_LOAD_BIRD1_TEXTURE";
-	}
-	if (!this->textures["FIGHTER_SHEET"].loadFromFile("Resources/Images/sprite/wojownikduzy.png"))
-	{
-		throw "ERROR::GAME_STATE::COULD_NOT_LOAD_BIRD1_TEXTURE";
 	}
 	if (!this->textures["WILL_SHEET"].loadFromFile("Resources/Images/sprite/will.png"))
 	{
@@ -131,7 +113,31 @@ void LoadGameState::initTextures()
 	{
 		throw "ERROR::GAME_STATE::COULD_NOT_LOAD_BIRD1_TEXTURE";
 	}
-	if (!this->textures["ENEMY_SHEET"].loadFromFile("Resources/Images/sprite/enemy.png"))
+	if (!this->textures["ENEMY1_SHEET"].loadFromFile("Resources/Images/sprite/enemy1.png"))
+	{
+		throw "ERROR::GAME_STATE::COULD_NOT_LOAD_BIRD1_TEXTURE";
+	}
+	if (!this->textures["ENEMY2_SHEET"].loadFromFile("Resources/Images/sprite/enemy2.png"))
+	{
+		throw "ERROR::GAME_STATE::COULD_NOT_LOAD_BIRD1_TEXTURE";
+	}
+	if (!this->textures["ENEMY3_SHEET"].loadFromFile("Resources/Images/sprite/enemy3.png"))
+	{
+		throw "ERROR::GAME_STATE::COULD_NOT_LOAD_BIRD1_TEXTURE";
+	}
+	if (!this->textures["ENEMY4_SHEET"].loadFromFile("Resources/Images/sprite/enemy4.png"))
+	{
+		throw "ERROR::GAME_STATE::COULD_NOT_LOAD_BIRD1_TEXTURE";
+	}
+	if (!this->textures["ENEMY5_SHEET"].loadFromFile("Resources/Images/sprite/enemy5.png"))
+	{
+		throw "ERROR::GAME_STATE::COULD_NOT_LOAD_BIRD1_TEXTURE";
+	}
+	if (!this->textures["ENEMY6_SHEET"].loadFromFile("Resources/Images/sprite/enemy6.png"))
+	{
+		throw "ERROR::GAME_STATE::COULD_NOT_LOAD_BIRD1_TEXTURE";
+	}
+	if (!this->textures["ENEMY7_SHEET"].loadFromFile("Resources/Images/sprite/enemy7.png"))
 	{
 		throw "ERROR::GAME_STATE::COULD_NOT_LOAD_BIRD1_TEXTURE";
 	}
@@ -166,6 +172,11 @@ void LoadGameState::initPlayerGui()
 	this->playerGui = new PlayerGui(this->player, this->stateData->gfxSettings->resolutions);//sprawdzic czy jest w konstruktorze i destruktorze
 }
 
+void LoadGameState::initEnemyGui()
+{
+	this->enemyGui = new EnemyGui(this->enemy, this->stateData->gfxSettings->resolutions);//sprawdzic czy jest w konstruktorze i destruktorze
+}
+
 void LoadGameState::initEnemySystem()
 {
 
@@ -194,6 +205,274 @@ void LoadGameState::initDebugText()
 void LoadGameState::initEnemy()
 {
 	
+	if (changeEnemy)
+	{
+		cout << "JESTEM w CHANGE ENEMY" << endl;
+		changeEnemy = false;
+		switch (enemyNumberSave)
+		{
+		case 1:
+			if (this->player->getPosition().x != enemyPosition_x && this->player->getPosition().y != enemyPosition_y)
+			{
+				this->enemy = new Enemy(enemyPosition_x, enemyPosition_y, this->textures["ENEMY_SHEET"]);//WROG
+				this->enemy->getAttributeComponent()->hp = enemyHp;
+				cout << "Hp wroga" << " " << this->enemy->getAttributeComponent()->hp << endl;
+				break;
+			}
+			else
+			{
+				this->enemy = new Enemy(enemyPosition_x + 400.f, enemyPosition_y + 400.f, this->textures["ENEMY_SHEET"]);//WROG
+				this->enemy->getAttributeComponent()->hp = enemyHp;
+				cout << "Hp wroga" << " " << this->enemy->getAttributeComponent()->hp << endl;
+				break;
+			}
+		case 2:
+			if (this->player->getPosition().x != enemyPosition_x && this->player->getPosition().y != enemyPosition_y)
+			{
+				this->enemy = new Enemy(enemyPosition_x, enemyPosition_y, this->textures["ENEMY1_SHEET"]);//WROG
+				this->enemy->getAttributeComponent()->hp = enemyHp;
+				cout << "Hp wroga" << " " << this->enemy->getAttributeComponent()->hp << endl;
+				cout << "Pozycja wroga" << " " << enemy->getPosition().x << " " << enemy->getPosition().y << endl;
+				break;
+			}
+			else
+			{
+				this->enemy = new Enemy(enemyPosition_x + 400.f, enemyPosition_y + 400.f, this->textures["ENEMY1_SHEET"]);//WROG
+				this->enemy->getAttributeComponent()->hp = enemyHp;
+				cout << "Hp wroga" << " " << this->enemy->getAttributeComponent()->hp << endl;
+				cout << "Pozycja wroga" << " " << enemy->getPosition().x << " " << enemy->getPosition().y << endl;
+
+				break;
+			}
+
+
+		case 3:
+			if (this->player->getPosition().x != enemyPosition_x && this->player->getPosition().y != enemyPosition_y)
+			{
+				this->enemy = new Enemy(enemyPosition_x, enemyPosition_y, this->textures["ENEMY2_SHEET"]);//WROG
+				this->enemy->getAttributeComponent()->hp = enemyHp;
+				cout << "Hp wroga" << " " << this->enemy->getAttributeComponent()->hp << endl;
+				cout << "Pozycja wroga" << " " << enemy->getPosition().x << " " << enemy->getPosition().y << endl;
+				break;
+			}
+			else
+			{
+				this->enemy = new Enemy(enemyPosition_x + 400.f, enemyPosition_y + 400.f, this->textures["ENEMY2_SHEET"]);//WROG
+				this->enemy->getAttributeComponent()->hp = this->enemyHp;
+				cout << "Hp wroga" << " " << this->enemy->getAttributeComponent()->hp << endl;
+				cout << "Pozycja wroga" << " " << enemy->getPosition().x << " " << enemy->getPosition().y << endl;
+				break;
+			}
+		case 4:
+			if (this->player->getPosition().x != enemyPosition_x && this->player->getPosition().y != enemyPosition_y)
+			{
+				this->enemy = new Enemy(enemyPosition_x, enemyPosition_y, this->textures["ENEMY3_SHEET"]);//WROG
+
+				break;
+			}
+			else
+			{
+				this->enemy = new Enemy(enemyPosition_x + 400.f, enemyPosition_y + 400.f, this->textures["ENEMY3_SHEET"]);//WROG
+
+				break;
+			}
+		case 5:
+			if (this->player->getPosition().x != enemyPosition_x && this->player->getPosition().y != enemyPosition_y)
+			{
+				this->enemy = new Enemy(enemyPosition_x, enemyPosition_y, this->textures["ENEMY4_SHEET"]);//WROG
+
+				break;
+			}
+			else
+			{
+				this->enemy = new Enemy(enemyPosition_x + 400.f, enemyPosition_y + 400.f, this->textures["ENEMY4_SHEET"]);//WROG
+
+				break;
+			}
+		case 6:
+			if (this->player->getPosition().x != enemyPosition_x && this->player->getPosition().y != enemyPosition_y)
+			{
+				this->enemy = new Enemy(enemyPosition_x, enemyPosition_y, this->textures["ENEMY5_SHEET"]);//WROG
+
+				break;
+			}
+			else
+			{
+				this->enemy = new Enemy(enemyPosition_x + 400.f, enemyPosition_y + 400.f, this->textures["ENEMY5_SHEET"]);//WROG
+
+				break;
+			}
+
+		case 7:
+			if (this->player->getPosition().x != enemyPosition_x && this->player->getPosition().y != enemyPosition_y)
+			{
+				this->enemy = new Enemy(enemyPosition_x, enemyPosition_y, this->textures["ENEMY6_SHEET"]);//WROG
+
+				break;
+			}
+			else
+			{
+				this->enemy = new Enemy(enemyPosition_x + 400.f, enemyPosition_y + 400.f, this->textures["ENEMY6_SHEET"]);//WROG
+
+				break;
+			}
+		case 8:
+			if (this->player->getPosition().x != enemyPosition_x && this->player->getPosition().y != enemyPosition_y)
+			{
+				this->enemy = new Enemy(enemyPosition_x, enemyPosition_y, this->textures["ENEMY76_SHEET"]);//WROG
+
+				break;
+			}
+			else
+			{
+				this->enemy = new Enemy(enemyPosition_x + 400.f, enemyPosition_y + 400.f, this->textures["ENEMY7_SHEET"]);//WROG
+
+				break;
+			}
+
+		default:
+			break;
+		}
+	}
+	else
+	{
+		cout << "JESTEM w Rand ENEMY" << endl;
+		srand(time(NULL));
+		enemyNumber = rand() % 3 + 1;
+		position_enemy_x = rand() % 1500 + 300;
+		position_enemy_y = rand() % 700 + 300;
+		cout << "Numer wroga" << " " << enemyNumber << endl;
+		switch (enemyNumber)
+		{
+		case 1:
+			if (this->player->getPosition().x != position_enemy_x && this->player->getPosition().y != position_enemy_y)
+			{
+				this->enemy = new Enemy(position_enemy_x, position_enemy_y, this->textures["ENEMY_SHEET"]);//WROG
+				this->enemy->getAttributeComponent()->hp = 6;
+				cout << "Hp wroga" << " " << this->enemy->getAttributeComponent()->hp << endl;
+				break;
+			}
+			else
+			{
+				this->enemy = new Enemy(position_enemy_x + 400.f, position_enemy_y + 400.f, this->textures["ENEMY_SHEET"]);//WROG
+				this->enemy->getAttributeComponent()->hp = 6;
+				cout << "Hp wroga" << " " << this->enemy->getAttributeComponent()->hp << endl;
+				break;
+			}
+		case 2:
+			if (this->player->getPosition().x != position_enemy_x && this->player->getPosition().y != position_enemy_y)
+			{
+				this->enemy = new Enemy(position_enemy_x, position_enemy_y, this->textures["ENEMY1_SHEET"]);//WROG
+				this->enemy->getAttributeComponent()->hp = 6;
+				cout << "Hp wroga" << " " << this->enemy->getAttributeComponent()->hp << endl;
+				cout << "Pozycja wroga" << " " << enemy->getPosition().x << " " << enemy->getPosition().y << endl;
+				break;
+			}
+			else
+			{
+				this->enemy = new Enemy(position_enemy_x + 400.f, position_enemy_y + 400.f, this->textures["ENEMY1_SHEET"]);//WROG
+				this->enemy->getAttributeComponent()->hp = 6;
+				cout << "Hp wroga" << " " << this->enemy->getAttributeComponent()->hp << endl;
+				cout << "Pozycja wroga" << " " << enemy->getPosition().x << " " << enemy->getPosition().y << endl;
+
+				break;
+			}
+
+
+		case 3:
+			if (this->player->getPosition().x != position_enemy_x && this->player->getPosition().y != position_enemy_y)
+			{
+				this->enemy = new Enemy(position_enemy_x, position_enemy_y, this->textures["ENEMY2_SHEET"]);//WROG
+				this->enemy->getAttributeComponent()->hp = 6;
+				cout << "Hp wroga" << " " << this->enemy->getAttributeComponent()->hp << endl;
+				cout << "Pozycja wroga" << " " << enemy->getPosition().x << " " << enemy->getPosition().y << endl;
+				break;
+			}
+			else
+			{
+				this->enemy = new Enemy(position_enemy_x + 400.f, position_enemy_y + 400.f, this->textures["ENEMY2_SHEET"]);//WROG
+				this->enemy->getAttributeComponent()->hp = 6;
+				cout << "Hp wroga" << " " << this->enemy->getAttributeComponent()->hp << endl;
+				cout << "Pozycja wroga" << " " << enemy->getPosition().x << " " << enemy->getPosition().y << endl;
+				break;
+			}
+		case 4:
+			if (this->player->getPosition().x != position_enemy_x && this->player->getPosition().y != position_enemy_y)
+			{
+				this->enemy = new Enemy(position_enemy_x, position_enemy_y, this->textures["ENEMY3_SHEET"]);//WROG
+
+				break;
+			}
+			else
+			{
+				this->enemy = new Enemy(position_enemy_x + 400.f, position_enemy_y + 400.f, this->textures["ENEMY3_SHEET"]);//WROG
+
+				break;
+			}
+		case 5:
+			if (this->player->getPosition().x != position_enemy_x && this->player->getPosition().y != position_enemy_y)
+			{
+				this->enemy = new Enemy(position_enemy_x, position_enemy_y, this->textures["ENEMY4_SHEET"]);//WROG
+
+				break;
+			}
+			else
+			{
+				this->enemy = new Enemy(position_enemy_x + 400.f, position_enemy_y + 400.f, this->textures["ENEMY4_SHEET"]);//WROG
+
+				break;
+			}
+		case 6:
+			if (this->player->getPosition().x != position_enemy_x && this->player->getPosition().y != position_enemy_y)
+			{
+				this->enemy = new Enemy(position_enemy_x, position_enemy_y, this->textures["ENEMY5_SHEET"]);//WROG
+
+				break;
+			}
+			else
+			{
+				this->enemy = new Enemy(position_enemy_x + 400.f, position_enemy_y + 400.f, this->textures["ENEMY5_SHEET"]);//WROG
+
+				break;
+			}
+
+		case 7:
+			if (this->player->getPosition().x != position_enemy_x && this->player->getPosition().y != position_enemy_y)
+			{
+				this->enemy = new Enemy(position_enemy_x, position_enemy_y, this->textures["ENEMY6_SHEET"]);//WROG
+
+				break;
+			}
+			else
+			{
+				this->enemy = new Enemy(position_enemy_x + 400.f, position_enemy_y + 400.f, this->textures["ENEMY6_SHEET"]);//WROG
+
+				break;
+			}
+
+		case 8:
+			if (this->player->getPosition().x != position_enemy_x && this->player->getPosition().y != position_enemy_y)
+			{
+				this->enemy = new Enemy(position_enemy_x, position_enemy_y, this->textures["ENEMY7_SHEET"]);//WROG
+
+				break;
+			}
+			else
+			{
+				this->enemy = new Enemy(position_enemy_x + 400.f, position_enemy_y + 400.f, this->textures["ENEMY7_SHEET"]);//WROG
+
+				break;
+			}
+
+		default:
+			break;
+		}
+
+	}
+
+
+	
+
 }
 
 void LoadGameState::initPauseMenuGameOver()
@@ -215,7 +494,7 @@ void LoadGameState::initHelpState()
 
 void LoadGameState::initPlayers()
 {
-	this->enemy = new Enemy(enemyPosition_x, enemyPosition_y, this->textures["ENEMY_SHEET"]);
+	
 
 	this->chooseCharacter();
 
@@ -224,6 +503,7 @@ void LoadGameState::initPlayers()
 	{
 
 		this->player = new Player(playerPosition_x, playerPosition_y, this->textures["WILL_SHEET"]);
+		
 
 	}
 
@@ -231,13 +511,13 @@ void LoadGameState::initPlayers()
 	{
 
 		this->player = new Player(playerPosition_x, playerPosition_y, this->textures["ALYSS_SHEET"]);
-
+		
 	}
 
 	if (characterHorace == 1)
 	{
 		this->player = new Player(playerPosition_x, playerPosition_y, this->textures["HORACE_SHEET"]);
-
+		
 	}
 
 
@@ -273,10 +553,13 @@ void LoadGameState::update(const float& dt)
 		this->player->update(dt, this->mousePostView, this->view);
 		this->enemy->update(dt, this->mousePostView, this->view);
 		this->playerGui->update(dt);
+		this->enemyGui->update(dt);
 		this->updateDistance(player, enemy, dt);
-		this->updateCombat(player, enemy, dt);
 		this->updateEmemies(dt);
+		this->playerGui->update(dt);
+		this->enemyGui->update(dt);
 		this->tts->update(dt);
+
 
 
 
@@ -322,6 +605,7 @@ void LoadGameState::render(RenderTarget* target)
 	this->enemy->render(this->renderTexture);
 	renderTexture.setView(this->renderTexture.getDefaultView());
 	this->playerGui->render(this->renderTexture);
+	this->enemyGui->render(this->renderTexture);
 
 	if (gameOver)
 	{
@@ -358,10 +642,11 @@ void LoadGameState::saveToFile(string path)
 		ofs << this->player->getAttributeComponent()->hp << endl;
 		ofs << this->player->getAttributeComponent()->exp << endl;
 		ofs << this->enemy->getPosition().x << endl;
-		cout <<"Player 2 position x"<<" "<< this->enemy->getPosition().x << endl;
 		ofs << this->enemy->getPosition().y << endl;
-		ofs << this->enemy->getAttributeComponent()->hp << endl;
+		ofs << this->enemy->getAttributeComponent()->hpEnemy << endl;
 		ofs << this->enemy->getAttributeComponent()->exp << endl;
+		ofs << this->enemyNumber << endl;
+		ofs << this->playerGui->level << endl;
 
 	}
 	ofs.clear();
@@ -370,10 +655,24 @@ void LoadGameState::saveToFile(string path)
 
 }
 
+void LoadGameState::saveToFileGui(string path)
+{
+	ofstream ofs(path);
+	if (ofs.is_open())
+	{
+		ofs << 1;
+
+	}
+	ofs.clear();
+	ofs.seekp(0);//ustaw na poczatek
+	ofs.close();
+}
+
 void LoadGameState::loadFromFile(string path)
 {
+	cout << "Pobieram dane z saveGame" << endl;
 	load = true;
-
+	changeEnemy = true;
 	ifstream ifs(path);
 	if (ifs.is_open())
 	{
@@ -394,11 +693,27 @@ void LoadGameState::loadFromFile(string path)
 		cout << enemyHp << endl;
 		ifs >> enemyExp;
 		cout << enemyHp << endl;
+		ifs >> enemyNumberSave;
+		cout <<"NUMER WROGA"<<" "<< enemyNumberSave << endl;
+		ifs >> levelSave;
+		cout << "Level Save" << " " << levelSave << endl;
 	}
 	ifs.clear();
 	ifs.seekg(0);//beginning
 	ifs.close();
 	load = false;
+}
+
+void LoadGameState::loadFromFileGui(string path)
+{
+	ifstream ifs(path);
+	if (ifs.is_open())
+	{
+		ifs >> prawda_czy_falsz;
+	}
+	ifs.clear();
+	ifs.seekg(0);//beginning
+	ifs.close();
 }
 
 const bool LoadGameState::getKeyTime()
@@ -491,6 +806,7 @@ void LoadGameState::updatePauseMenuButtons()
 	if (pauseMenu->isButtonPressed("Save"))
 	{
 		this->saveToFile("Config/saveGame.txt");
+		this->saveToFileGui("Config/saveGui.txt");
 	}
 }
 
@@ -505,28 +821,36 @@ void LoadGameState::updatePlayer(const float& dt)
 void LoadGameState::updateEmemies(const float& dt)
 {
 
-	if (Mouse::isButtonPressed(Mouse::Left))
+	if (Mouse::isButtonPressed(Mouse::Left) && this->player->getWeapon()->getAttackTimer())
 	{
 		this->player->setInitAttack(true);
 	}
-	this->player->setInitAttack(false);
 
-	if (sf::Mouse::isButtonPressed(sf::Mouse::Left) && this->player->getWeapon()->getAttackTimer())
-		this->player->setInitAttack(true);
-	{
-		this->updateWorldBoundsCollision(player, dt);
-		this->updateWorldBoundsCollision(enemy, dt);
+	enemy->update(dt, this->mousePostView, this->view);
+	this->updateCombat(player, enemy, dt);
 
 
+	this->updateWorldBoundsCollision(player, dt);
+	this->updateWorldBoundsCollision(enemy, dt);
+
+
+		controlExp = true;
 		if (enemy->isDead())
 		{
-			this->player->gainExp(enemy->getGainExp());
+			cout << "Jestem w enemy Dead" << endl;
+			if (controlExp)
+			{
+				this->player->gainExp(enemy->getGainExp());
+			}
+
+			cout << "Update Enemy Hp w updateEnemies" << endl;
+			cout << "Gain EXP" << endl;
 			this->tts->addTextTag(Experience_Tag, this->player->getPosition().x - 40.f, this->player->getPosition().y - 30.f, static_cast<int>(enemy->getGainExp()), "+", "EXP");
-			delete enemy;
+			this->initEnemy();
+			this->initEnemyGui();
+			controlExp = false;
 		}
 
-
-	}
 
 	this->player->setInitAttack(false);
 
@@ -535,9 +859,9 @@ void LoadGameState::updateEmemies(const float& dt)
 void LoadGameState::updateCombat(Player* player, Enemy* enemy, const float& dt)
 {
 
-	if (this->player->getInitAttack()
-		&& enemy->getGlobalBounds().contains(this->mousePostView)
-		&& enemy->getDistance(*this->player) < this->player->getWeapon()->getRange())
+	this->player->getAttributeComponent()->updateLevel();
+	if (this->player->getInitAttack() && enemy->getGlobalBounds().contains(this->mousePostWindow.x, this->mousePostWindow.y)
+		&& enemy->getDistance(*this->player) < this->player->getWeapon()->getRange() && enemy->getDamageTimerDone())
 	{
 
 		cout << "Jestem " << endl;
@@ -549,9 +873,11 @@ void LoadGameState::updateCombat(Player* player, Enemy* enemy, const float& dt)
 	}
 	if (enemy->getGlobalBounds().intersects(this->player->getGlobalBounds()) && this->player->getDamageTimer())
 	{
+		this->player->getAttributeComponent()->updateLevel();
 		cout << "Jestem 2" << endl;
 		int damage = enemy->getAttributeComponent()->damageMax;
 		this->player->loseHp(damage);
+		this->playerGui->updateHPBar();
 		this->tts->addTextTag(Negative_Tag, player->getPosition().x - 30.f, player->getPosition().y, damage, "-", "HP");
 		if (this->player->getAttributeComponent()->hp == 0)
 		{
@@ -611,17 +937,54 @@ void LoadGameState::updateDistance(Player* player, Enemy* enemy, const float& dt
 
 	moveVec /= vecLength;
 
-	if ((player->getPosition().x != enemy->getPosition().x) && abs(vecLength) < 500.f || (player->getPosition().y != enemy->getPosition().y) && abs(vecLength) < 500.f)//jezeli ich pozycje sa rozne
+	if (characterAlyss == 1)
 	{
-		if (player->getPosition().x - enemy->getPosition().x > 60 || player->getPosition().y - enemy->getPosition().y > 60)
+		if ((player->getPosition().x != enemy->getPosition().x) && abs(vecLength) < 400.f || (player->getPosition().y != enemy->getPosition().y) && abs(vecLength) < 400.f)//jezeli ich pozycje sa rozne
 		{
-			enemy->move(moveVec.x, moveVec.y, dt);
-		}
-		else
-		{
-			enemy->stopVelocity();
-		}
+			if ((player->getPosition().x - enemy->getPosition().x <= 55 && player->getMovementComponent()->getVelocity().x == 0) || (player->getPosition().y - enemy->getPosition().y <= 55 && player->getMovementComponent()->getVelocity().y == 0))
+			{
+				enemy->stopVelocity();
+			}
+			else
+			{
+				enemy->move(moveVec.x, moveVec.y, dt);
 
+			}
+
+		}
+	}
+
+	if (characterHorace == 1)
+	{
+		if ((player->getPosition().x != enemy->getPosition().x) && abs(vecLength) < 500.f || (player->getPosition().y != enemy->getPosition().y) && abs(vecLength) < 500.f)//jezeli ich pozycje sa rozne
+		{
+			if ((player->getPosition().x - enemy->getPosition().x <= 50 && player->getMovementComponent()->getVelocity().x == 0) || (player->getPosition().y - enemy->getPosition().y <= 50 && player->getMovementComponent()->getVelocity().y == 0))
+			{
+				enemy->stopVelocity();
+			}
+			else
+			{
+				enemy->move(moveVec.x, moveVec.y, dt);
+
+			}
+
+		}
+	}
+	if (characterWill == 1)
+	{
+		if ((player->getPosition().x != enemy->getPosition().x) && abs(vecLength) < 400.f || (player->getPosition().y != enemy->getPosition().y) && abs(vecLength) < 400.f)//jezeli ich pozycje sa rozne
+		{
+			if ((player->getPosition().x - enemy->getPosition().x <= 60 && player->getMovementComponent()->getVelocity().x == 0) || (player->getPosition().y - enemy->getPosition().y <= 60 && player->getMovementComponent()->getVelocity().y == 0))
+			{
+				enemy->stopVelocity();
+			}
+			else
+			{
+				enemy->move(moveVec.x, moveVec.y, dt);
+
+			}
+
+		}
 	}
 }
 void LoadGameState::chooseCharacter()
