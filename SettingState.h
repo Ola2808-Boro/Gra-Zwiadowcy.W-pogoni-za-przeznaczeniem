@@ -10,6 +10,7 @@ class SettingState:public State//klasa bazowa
 private:
 	//Will
 	RectangleShape willTreatyShowing;
+	Text willShowingText;
 	Texture willTreatyShowingTexture;//zeby miec funkcje z tej klasy
 	//tlo
 	RectangleShape background;//tlo
@@ -17,9 +18,11 @@ private:
 	//Alyss
 	RectangleShape alyssShowing;//tlo
 	Texture alyssShowingTexture;
+	Text alyssShowingText;
 	//Horace
 	RectangleShape horaceShowing;
 	Texture horaceShowingTexture;
+	Text horaceShowingText;
 
 
 	
