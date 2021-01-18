@@ -1,22 +1,26 @@
 #include "stdafx.h"
 #include "PlayerGui.h"
 
-
-PlayerGui::PlayerGui(Player* player, VideoMode& vm):vm(vm)
+//-------------------------------------------------Konstruktor----------------------------------------------//
+PlayerGui::PlayerGui(Player* player, VideoMode& vm):LoadAttributeComponent(level),vm(vm)
 {
 	this->player = player;
 	this->initFont();
 	this->initLevelElement();
 	this->initExpBar();
 	this->initHPBar();
+	this->initPlayerTabs(vm,font,*player);
+	this->loadFromFile("Config/saveGame.txt");
+	this->loadFromFileGui("Config/saveGui.txt");
 }
-
+//-------------------------------------------------Destruktor----------------------------------------------//
 PlayerGui::~PlayerGui()
 {
 	delete this->hpBar;
 	delete this->expBar;
+	delete this->playerGuiTabs;
 }
-
+//-------------------------------------------------Funkcje----------------------------------------------//
 void PlayerGui::initFont()
 {
 	this->font.loadFromFile("Fonts/FjallaOne-Regular.ttf");
@@ -24,51 +28,16 @@ void PlayerGui::initFont()
 
 void PlayerGui::initHPBar()
 {
-	this->hpBar = new gui::ProgressBar(1.f, 8.3f, 10.4f, 2.8f,this->player->getAttributeComponent()->hpMax,Color::Red,180,&this->font, this->vm );
+	
+	this->hpBar = new gui::ProgressBar(1.f, 8.3f, 10.4f, 2.8f, this->player->getAttributeComponent()->hpMax, Color::Red, 180, &this->font, this->vm);
 
-	//zastapione przez klase stworzona w Gui
-	/*float width = gui::p2pX(10.4f, this->vm);
-	float height = gui::p2pY(1.8f, this->vm);
-	float x = gui::p2pX(1.f, this->vm);
-	float y = gui::p2pY(8.3f, this->vm);
-	this->hpBarMaxSizeWidth = width;
-	this->hpBarText.setFont(font);
-	this->hpBarText.setCharacterSize(gui::calucuateCharacterSize(this->vm, 150));
-
-	this->hpBarBack.setSize(Vector2f(width, height));
-	this->hpBarBack.setFillColor(Color(50, 50, 50, 200));
-	this->hpBarBack.setPosition(x, y);
-
-	this->hpBarInner.setSize(Vector2f(width, height));
-	this->hpBarInner.setFillColor(Color(250, 20, 20, 200));
-	this->hpBarInner.setPosition(this->hpBarBack.getPosition());
-
-	this->hpBarText.setPosition(this->hpBarInner.getPosition().x + 10.f, this->hpBarInner.getPosition().y + 5.f);*/
 }
 
 void PlayerGui::initExpBar()//bedzie nizej niz hp
 {
+	
+		this->expBar = new gui::ProgressBar(1.f, 5.6f, 10.4f, 1.9f, this->player->getAttributeComponent()->expNext ,Color::Blue, 220, &this->font, this->vm);
 
-	this->expBar = new gui::ProgressBar(1.f, 5.6f, 10.4f, 1.9f, this->player->getAttributeComponent()->exp,Color::Blue,220, &this->font, this->vm);
-
-	/*float width = gui::p2pX(10.4f, this->vm);
-	float height = gui::p2pY(1.9f, this->vm);
-	float x = gui::p2pX(1.f, this->vm);
-	float y = gui::p2pY(5.6f, this->vm);
-	this->expBarMaxSizeWidth = width;
-
-	this->expBarText.setFont(font);
-	this->expBarText.setCharacterSize(gui::calucuateCharacterSize(this->vm, 200));
-
-	this->expBarBack.setSize(Vector2f(width, height));
-	this->expBarBack.setFillColor(Color(50, 50, 50, 200));
-	this->expBarBack.setPosition(x, y);
-
-	this->expBarInner.setSize(Vector2f(width, height));
-	this->expBarInner.setFillColor(Color(20, 250, 20, 200));
-	this->expBarInner.setPosition(this->expBarBack.getPosition());
-
-	this->expBarText.setPosition(this->expBarInner.getPosition().x + this->levelElementBack.getPosition().x + gui::p2pX(0.53f, this->vm), this->expBarInner.getPosition().y + this->levelElementBack.getPosition().x + gui::p2pY(0.15f, this->vm));*/
 }
 
 void PlayerGui::initLevelElement()
@@ -87,19 +56,30 @@ void PlayerGui::initLevelElement()
 	this->levelElementText.setPosition(this->levelElementBack.getPosition().x + gui::p2pX(0.53f, this->vm), this->levelElementBack.getPosition().y + gui::p2pY(0.5f, this->vm));
 }
 
+void PlayerGui::initPlayerTabs(VideoMode& vm, Font& font, Player& player)
+{
+	this->playerGuiTabs = new PlayerGuiTabs(vm, font, player);
+}
 
 void PlayerGui::update(const float& dt)
 {
+	//4 funkcje
+
 	this->updateLevelElement();
-	this->updateHPBar();
 	this->updateExpBar();
+	this->updateHPBar();
+	this->updatePlayerGuiTabs();
+	
 }
 
 void PlayerGui::render(RenderTarget& target)
 {
+	//4 funkcje
 	this->renderLevelElement(target);
-	this->renderHPBar(target);
 	this->renderExpBar(target);
+	this->renderHPBar(target);
+	this->renderPlayerGuiTabs(target);
+	
 }
 
 void PlayerGui::renderHPBar(RenderTarget& target)
@@ -117,20 +97,86 @@ void PlayerGui::renderLevelElement(RenderTarget& target)
 {
 	target.draw(levelElementBack);
 	target.draw(levelElementText);
+	
 }
 
 void PlayerGui::updateHPBar()
 {
-	this->hpBar->updateProgressBar(this->player->getAttributeComponent()->hp);//(const int current_value), to bedzie moja biezaca wartosc dla klasy w Gui
+	
+		cout << "Player Gui Hp " <<" "<< this->player->getAttributeComponent()->hp<<endl;
+		this->hpBar->updateProgressBar(this->player->getAttributeComponent()->hp, this->player->getAttributeComponent()->hpMax);
+
 }
+
 
 void PlayerGui::updateLevelElement()
 {
-	this->levelElementString = to_string(this->player->getAttributeComponent()->level);
-	this->levelElementText.setString(this->levelElementString);
+	cout <<"Leve"<<" "<< this->player->getAttributeComponent()->level << endl;
+		this->levelElementString = to_string(this->player->getAttributeComponent()->level);
+		this->levelElementText.setString(this->levelElementString);
+}
+
+void PlayerGui::updatePlayerGuiTabs()
+{
+	this->playerGuiTabs->update();
+}
+
+void PlayerGui::renderPlayerGuiTabs(RenderTarget& target)
+{
+	this->playerGuiTabs->render(target);
+}
+
+const bool PlayerGui::getTabsOpen() const
+{
+	return this->playerGuiTabs->tapsOpen();
+}
+
+void PlayerGui::toggleCharacterTab() 
+{
+	this->playerGuiTabs->toggleTab(PlayerTabs::Character_Tab);
 }
 
 void PlayerGui::updateExpBar()
 {
-	this->expBar->updateProgressBar(this->player->getAttributeComponent()->exp);
+	
+		cout << "Player Gui exp " <<" "<< this->player->getAttributeComponent()->exp<< endl;
+		this->expBar->updateProgressBar(this->player->getAttributeComponent()->exp, this->player->getAttributeComponent()->expNext);
+	
+	
+}
+void PlayerGui::loadFromFile(string path)
+{
+	load = true;
+	ifstream ifs(path);
+	if (ifs.is_open())
+	{
+
+		ifs >> playerPosition_x;
+		ifs >> playerPosition_y;
+		ifs >> playerHp;
+		ifs >> playerExp;
+		ifs >> enemyPosition_x;
+		ifs >> enemyPosition_y;
+		ifs >> enemyHp;
+		ifs >> enemyExp;
+		ifs >> saveNumber;
+		ifs >> levelSave;
+	}
+	ifs.clear();
+	ifs.seekg(0);//beginning
+	ifs.close();
+
+}
+
+void PlayerGui::loadFromFileGui(string path)
+{
+	ifstream ifs(path);
+	if (ifs.is_open())
+	{
+		ifs >> prawda_czy_falsz;
+	}
+	ifs.clear();
+	ifs.seekg(0);//beginning
+	ifs.close();
+
 }
