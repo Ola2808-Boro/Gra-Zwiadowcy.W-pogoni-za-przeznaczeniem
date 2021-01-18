@@ -116,6 +116,7 @@ void MainMenuState::updateButton()
 	if (this->buttons["Game_State"]->isPressed())
 	{
 		this->states->push(new GameStates(this->stateData));
+		this->saveToFileNOT("Config/saveGui.txt");
 	}
 	if (this->buttons["Settings_State"]->isPressed())
 	{
@@ -125,23 +126,28 @@ void MainMenuState::updateButton()
 			this->saveToFileNOT("Config/alyss.txt");
 		
 			this->saveToFileNOT("Config/horace.txt");
+
+			this->saveToFileNOT("Config/saveGui.txt");
 	
 		this->states->push(new SettingState(this->stateData));
 	}
 	if (this->buttons["Exit_State"]->isPressed())
 	{
 
-		this->saveToFileNOT("Config/will.txt");
+		//this->saveToFileNOT("Config/will.txt");
 
-		this->saveToFileNOT("Config/alyss.txt");
+		//this->saveToFileNOT("Config/alyss.txt");
 
-		this->saveToFileNOT("Config/horace.txt");
+		//this->saveToFileNOT("Config/horace.txt");
+
+		//this->saveToFileNOT("Config/saveGui.txt");
 
 		this->endState();
 	}
 	if (this->buttons["Load_Game"]->isPressed())
 	{
 		this->states->push(new LoadGameState(this->stateData));
+		this->saveToFile("Config/saveGui.txt");
 	}
 	
 }
@@ -191,6 +197,18 @@ void MainMenuState::saveToFileNOT(string path)
 	if (ofs.is_open())
 	{
 		ofs << 0 << endl;
+
+	}
+	ofs.clear();
+	ofs.seekp(0);//ustaw na poczatek
+	ofs.close();
+}
+void MainMenuState::saveToFile(string path)
+{
+	ofstream ofs(path);
+	if (ofs.is_open())
+	{
+		ofs << 1 << endl;
 
 	}
 	ofs.clear();
